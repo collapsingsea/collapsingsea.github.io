@@ -1,84 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的个人博客</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-        }
-        header {
-            background-color: #333;
-            color: #fff;
-            padding: 10px 0;
-            text-align: center;
-        }
-        nav {
-            display: flex;
-            justify-content: center;
-            background-color: #444;
-        }
-        nav a {
-            color: #fff;
-            padding: 15px 20px;
-            text-decoration: none;
-            text-transform: uppercase;
-        }
-        nav a:hover {
-            background-color: #555;
-        }
-        .container {
-            width: 80%;
-            margin: 20px auto;
-            background-color: #fff;
-            padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        .post {
-            margin-bottom: 40px;
-        }
-        .post h2 {
-            color: #333;
-        }
-        .post p {
-            line-height: 1.6;
-        }
-        footer {
-            text-align: center;
-            padding: 20px 0;
-            background-color: #333;
-            color: #fff;
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-        }
-    </style>
+  <title>Chenxi's first page😆</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <h1>欢迎来到我的个人博客</h1>
-    </header>
-    <nav>
-        <a href="#">主页</a>
-        <a href="#">关于我</a>
-        <a href="#">联系</a>
-    </nav>
-    <div class="container">
-        <div class="post">
-            <h2>第一篇博客文章</h2>
-            <p>这是一段示例文字。你可以在这里写下你的博客内容，分享你的想法和故事。</p>
-        </div>
-        <div class="post">
-            <h2>第二篇博客文章</h2>
-            <p>这是另一段示例文字。继续分享你的见闻和经历，让读者了解更多关于你的信息。</p>
-        </div>
+  <header>
+    <a href="#" class="logo">
+	<img src="images/logo.png"></a>
+    <ul>
+      <li><a href="#home" class="active">首页</a></li>
+      <li><a href="#about">关于</a></li>
+      <li><a href="#works">作品</a></li>
+      <li><a href="#contact">联系</a></li>
+    </ul>
+  </header>
+  <section>
+    <img src="images/stars.png" id="stars">
+    <img src="images/moon.png" id="moon">
+    <img src="images/mountains_behind.png" id="mountains_behind">
+    <h2 id="text">Moon Light</h2>
+    <a href="#sec" id="btn">Explore</a>
+    <img src="images/mountains_front.png" id="mountains_front">
+  </section>
+  <div class="sec" id="sec">
+    <h2>chenxi 的第一个网页</h2>
+<!-- About Section -->
+<!-- About Section -->
+<div class="sec" id="about">
+  <h2>About Me</h2>
+  <div class="about-container">
+    <div class="about-image">
+      <img src="images/avatar.png" alt="Avatar">
     </div>
-    <footer>
-        <p>© 2024 我的个人博客. 保留所有权利.</p>
-    </footer>
+    <div class="about-content">
+      <p>大一学生，自学计算机。</p>
+      <div class="about-buttons">
+        <a href="https://github.com/collapsingsea/collapsingsea.github.io" class="btn" target="_blank">GitHub</a>
+        <a href="https://space.bilibili.com/66087656?spm_id_from=333.788.0.0" class="btn" target="_blank">哔哩哔哩</a>
+        <a href="https://developer.mozilla.org/zh-CN/docs/Web/HTML" class="btn" target="_blank">公众号</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Works Section -->
+<div class="sec" id="works">
+  <h2>My Works</h2>
+  <div class="works-grid">
+    <div class="work-item">
+      <img src="images/work1.png" alt="Work 1">
+      <div class="work-overlay">
+        <h3>github项目主页</h3>
+        <p>关于本网页的开源代码</p>
+        <a href="https://github.com/collapsingsea/collapsingsea.github.io" class="link">链接直达</a>
+      </div>
+    </div>
+    <div class="work-item">
+      <img src="images/work2.jpg" alt="Work 2">
+      <div class="work-overlay">
+        <h3>动漫剪辑</h3>
+        <p>No Game No Life · Zero</p>
+        <a href="https://www.bilibili.com/video/BV1rU4y1J7uG/?spm_id_from=333.999.0.0&vd_source=98124e1e9d2ddb069a33e857aa3c0022" class="link">链接直达</a>
+      </div>
+    </div>
+    <div class="work-item">
+      <img src="images/work3.png" alt="Work 1">
+      <div class="work-overlay">
+        <h3>m1卡捣鼓</h3>
+        <p>破解复制教程</p>
+        <a href="https://www.bilibili.com/read/cv11495427/?spm_id_from=333.999.0.0" class="link">链接直达</a>
+      </div>
+    </div>   
+    <!-- Add more work items as needed -->
+  </div>
+</div>
+
+<!-- Contact Section -->
+<div class="sec" id="contact">
+  <h2>联系我</h2>
+  <form class="contact-form" action="https://formspree.io/f/xgvwkvqa" method="POST">
+    <div class="form-group">
+      <label for="name">Name:</label>
+      <input type="text" id="name" name="name" required>
+    </div>
+    <div class="form-group">
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" required>
+    </div>
+    <div class="form-group">
+      <label for="message">Message:</label>
+      <textarea id="message" name="message" required></textarea>
+    </div>
+    <button type="submit" class="submit-button">Send Message</button>
+  </form>
+</div>
+
+
+  <script>
+    let stars = document.getElementById('stars')
+    let moon = document.getElementById('moon')
+    let mountains_behind = document.getElementById('mountains_behind')
+    let text = document.getElementById('text')
+    let btn = document.getElementById('btn')
+    let mountains_front = document.getElementById('mountains_front')
+    let header = document.querySelector('header')
+
+    window.addEventListener('scroll', function(){
+      let value = window.scrollY;
+      stars.style.left = value * 0.65 + 'px'
+      moon.style.top = value * 1.05 + 'px'
+      mountains_behind.style.top = value * 0.5 + 'px'
+      mountains_front.style.top = value * 0 + 'px'
+      text.style.marginRight = value * 2 + 'px'
+      text.style.marginTop = value * 1.1 + 'px'
+      btn.style.marginTop = value * 1.5 + 'px'
+      header.style.top = value * 0.5 + 'px'
+    })
+  </script>
 </body>
 </html>
