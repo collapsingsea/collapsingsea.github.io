@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>推箱子 (Sokoban)</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>推箱子 (Sokoban)</h1>
+    <div class="game-container">
+        <div class="game-area">
+            <canvas id="gameCanvas" width="500" height="500"></canvas> <!-- Adjust size as needed -->
+             <div id="levelCompleteScreen" class="overlay" style="display: none;">
+                <h2>关卡完成!</h2>
+                <p>步数: <span id="finalMoves">0</span></p>
+                <button id="nextLevelButton">下一关</button>
+            </div>
+             <div id="gameCompleteScreen" class="overlay" style="display: none;">
+                <h2>恭喜通关!</h2>
+                 <p>你完成了所有关卡!</p>
+                <button id="playAgainButton">重新开始</button>
+            </div>
+        </div>
+        <div class="game-info">
+            <h2>信息</h2>
+            <div>关卡: <span id="levelNumber">1</span> / <span id="totalLevels">?</span></div>
+            <div>步数: <span id="moveCount">0</span></div>
+            <button id="restartButton">重置本关</button>
+        </div>
+    </div>
+    <p class="instructions">使用方向键移动和推箱子。将所有箱子($)推到目标(.)上。</p>
+
+    <script src="levels.js"></script> <!-- Load levels first -->
+    <script src="script.js"></script>
+</body>
+</html>

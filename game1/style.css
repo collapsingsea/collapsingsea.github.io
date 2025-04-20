@@ -1,0 +1,144 @@
+body {
+    font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #f0e6d2; /* Light beige background */
+    color: #333;
+    margin-top: 20px;
+}
+
+h1 {
+    color: #8b4513; /* Brown title */
+}
+
+.game-container {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.game-area {
+    position: relative; /* For overlay positioning */
+}
+
+#gameCanvas {
+    display: block;
+    background-color: #fff; /* White canvas background */
+    border: 2px solid #a0522d; /* Sienna border */
+}
+
+.game-info {
+    background-color: #f5f5dc; /* Beige info box */
+    padding: 15px 20px;
+    border-radius: 5px;
+    border: 1px solid #d2b48c; /* Tan border */
+    min-width: 180px;
+    text-align: left;
+}
+
+.game-info h2 {
+    margin-top: 0;
+    text-align: center;
+    color: #8b4513;
+    border-bottom: 1px solid #d2b48c;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+}
+
+.game-info div {
+    margin-bottom: 12px;
+    font-size: 1.1em;
+    color: #555;
+}
+
+.game-info span {
+    font-weight: bold;
+    color: #000;
+    float: right;
+}
+
+#restartButton {
+    display: block; /* Make it full width in the info box */
+    width: 100%;
+    margin-top: 15px;
+    padding: 8px 15px;
+    font-size: 1em;
+    cursor: pointer;
+    background-color: #deb887; /* BurlyWood */
+    color: #fff;
+    border: 1px solid #a0522d;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+#restartButton:hover {
+    background-color: #cd853f; /* Peru */
+}
+
+.instructions {
+    margin-top: 10px;
+    font-size: 0.9em;
+    color: #666;
+}
+
+/* Overlay Styles (Level Complete / Game Complete) */
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.75); /* Dark semi-transparent */
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    z-index: 100;
+    box-sizing: border-box;
+    padding: 20px;
+}
+
+.overlay h2 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #ffd700; /* Gold title */
+    font-size: 1.8em;
+}
+
+.overlay p {
+    font-size: 1.2em;
+    margin-bottom: 25px;
+}
+
+.overlay p span {
+    float: none; /* Reset float for final score */
+    color: #fff;
+}
+
+
+.overlay button { /* Style buttons within overlay */
+     padding: 10px 25px;
+     font-size: 1.1em;
+     cursor: pointer;
+     background-color: #90ee90; /* Light Green */
+     color: #333;
+     border: none;
+     border-radius: 5px;
+     font-weight: bold;
+}
+
+.overlay button:hover {
+     background-color: #32cd32; /* Lime Green */
+}
+
+#gameCompleteScreen button {
+    background-color: #ffa07a; /* Light Salmon */
+}
+#gameCompleteScreen button:hover {
+     background-color: #fa8072; /* Salmon */
+}
