@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <!-- Responsive viewport meta tag -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 对话界面 (响应式)</title>
+    <!-- Google Material Symbols -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Main application wrapper for 3-column flex layout -->
+    <div class="app-wrapper">
+
+        <!-- === Left Sidebar (Chat History) === -->
+        <div class="sidebar history-sidebar" id="history-sidebar">
+            <button id="new-chat-button" class="sidebar-button" title="开始新对话">
+                <span class="material-symbols-outlined">add_comment</span> 新对话
+            </button>
+            <ul id="chat-list">
+                <!-- Chat history items populated by JS -->
+            </ul>
+        </div>
+
+        <!-- === Resizer Handle (Left/Center) === -->
+        <div class="resizer" id="resizer-left"></div>
+
+        <!-- === Center Content (Chat Log & Input) === -->
+        <div class="center-content" id="center-content">
+            <header class="chat-header">
+                 <!-- Sidebar Toggle Buttons for Mobile -->
+                 <button id="toggle-history-button" class="header-icon-button" title="聊天记录">
+                     <span class="material-symbols-outlined">history</span>
+                 </button>
+
+                 <h1 id="chat-header-title">AI 对话</h1>
+
+                 <button id="toggle-settings-button" class="header-icon-button" title="设置">
+                     <span class="material-symbols-outlined">settings</span>
+                 </button>
+            </header>
+            <div class="chat-log" id="chat-log">
+                 <!-- Messages populated by JS -->
+            </div>
+            <div class="image-preview-area" id="image-preview-area">
+                 <!-- Image previews populated by JS -->
+            </div>
+            <div class="chat-input-area">
+                 <button id="upload-button" class="icon-button" title="上传图片">
+                     <span class="material-symbols-outlined">add_photo_alternate</span>
+                 </button>
+                 <input type="file" id="image-upload-input" accept="image/*" multiple style="display: none;">
+                 <input type="text" id="user-input" placeholder="输入消息或上传图片...">
+                 <button id="send-button" class="icon-button" title="发送消息">
+                     <span class="material-symbols-outlined">send</span>
+                 </button>
+            </div>
+        </div> <!-- End center-content -->
+
+        <!-- === Resizer Handle (Center/Right) === -->
+        <div class="resizer" id="resizer-right"></div>
+
+        <!-- === Right Sidebar (Settings & Auto-Send) === -->
+        <div class="sidebar settings-sidebar" id="settings-sidebar">
+            <h2>设置</h2>
+
+            <!-- API Key & Model Section -->
+            <div class="setting-group">
+                 <h3>连接</h3>
+                 <div class="setting-item api-key-setting">
+                     <label for="api-key-input">API Key:</label>
+                     <div class="api-key-input-wrapper">
+                         <input type="password" id="api-key-input" placeholder="输入 Google AI Key">
+                         <button id="save-key-button" title="保存密钥 (浏览器本地存储)">保存</button>
+                     </div>
+                 </div>
+                 <div class="setting-item">
+                    <label for="model-selector">模型:</label>
+                    <select id="model-selector" title="选择要使用的 AI 模型"></select>
+                 </div>
+            </div>
+
+            <!-- System Prompt Section -->
+             <div class="setting-group">
+                 <h3>AI 行为</h3>
+                <div class="setting-item system-instruction-setting">
+                    <label for="system-instruction-input">系统指令:</label>
+                    <textarea id="system-instruction-input" rows="3" placeholder="可选：设置 AI 的角色或行为 (例如 '你是一个Python专家')" title="设置 AI 的整体行为或角色"></textarea>
+                </div>
+            </div>
+
+            <!-- Generation Parameters Section -->
+            <div class="setting-group">
+                 <h3>生成参数</h3>
+                 <div class="setting-item temperature-setting">
+                    <label for="temperature-slider">Temperature:</label>
+                    <input type="range" id="temperature-slider" min="0" max="2" step="0.1" value="1.0" title="调整模型创造性 (0=更固定, 2=更随机)">
+                     <span id="temperature-value">1.0</span>
+                 </div>
+                 <div class="setting-item topp-setting">
+                     <label for="topp-slider">Top P:</label>
+                     <input type="range" id="topp-slider" min="0" max="1" step="0.05" value="1.0" title="累积概率抽样 (通常代替 Temperature 使用)">
+                     <span id="topp-value">1.0</span>
+                 </div>
+                 <div class="setting-item topk-setting">
+                     <label for="topk-input">Top K:</label>
+                     <input type="number" id="topk-input" min="0" step="1" placeholder="可选" title="仅考虑 K 个最可能词元 (0 或空表示不使用)">
+                 </div>
+                 <div class="setting-item max-tokens-setting">
+                     <label for="max-tokens-input">最大输出:</label>
+                     <input type="number" id="max-tokens-input" min="1" step="1" placeholder="默认" title="限制回复的最大令牌数">
+                 </div>
+            </div>
+
+             <!-- Other Settings Section -->
+            <div class="setting-group">
+                <h3>其他</h3>
+                 <div class="setting-item grounding-setting">
+                     <label for="search-toggle" title="允许模型访问Google搜索">
+                         <input type="checkbox" id="search-toggle">
+                         启用联网功能
+                     </label>
+                 </div>
+                 <div class="setting-item dark-mode-setting">
+                     <label for="dark-mode-toggle" class="toggle-switch-label">
+                         <input type="checkbox" id="dark-mode-toggle" class="toggle-switch-checkbox">
+                         <span class="toggle-switch-slider"></span>
+                     </label>
+                     <span>深色模式</span>
+                 </div>
+            </div>
+
+            <!-- Auto-Send Section -->
+            <div class="setting-group auto-send-group">
+                <h3>快捷发送</h3>
+                <div class="setting-item auto-send-text-setting">
+                    <label for="auto-send-input">发送内容:</label>
+                    <textarea id="auto-send-input" rows="2" placeholder="输入要自动发送的文本"></textarea>
+                </div>
+                <div class="setting-item auto-send-controls">
+                    <label for="auto-send-interval">间隔 (秒):</label>
+                    <input type="number" id="auto-send-interval" min="1" step="1" value="10">
+                    <button id="auto-send-button">开始发送</button>
+                </div>
+            </div>
+
+        </div> <!-- End settings-sidebar -->
+
+    </div> <!-- End app-wrapper -->
+
+    <script src="script.js"></script>
+</body>
+</html>
