@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentModelId = localStorage.getItem('selectedGoogleAiModel');
     if (!availableModels.some(m => m.id === currentModelId)) { currentModelId = availableModels[0]?.id || ''; if (currentModelId) localStorage.setItem('selectedGoogleAiModel', currentModelId); }
 
-    const DEFAULT_SETTINGS_VALUES = { temperature: 1.0, topP: 1.0, topK: 0, maxOutputTokens: null, searchEnabled: false };
+    const DEFAULT_SETTINGS_VALUES = { temperature: 1.1, topP: 0.95, topK: 0, maxOutputTokens: null, searchEnabled: false };
     let currentSettings = {
         systemInstruction: localStorage.getItem('googleAiSystemInstruction') || '', // Load user's value or EMPTY string
         temperature: parseFloat(localStorage.getItem('googleAiTemperature') ?? DEFAULT_SETTINGS_VALUES.temperature),
