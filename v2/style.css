@@ -1,11 +1,11 @@
 /* --- style.css --- */
 
-/* --- Color Variables (:root and body.dark-mode remain the same as before) --- */
+/* --- Color Variables (:root and body.dark-mode) --- */
 :root {
     --body-bg: #f0f4f8;
     --text-color: #1a202c;
     --text-color-light: #4a5568;
-    --text-color-header: #1a202c; /* Header text now dark */
+    --text-color-header: #1a202c; /* Header text now dark in light mode */
     --text-color-link: #4299e1;
     --text-color-link-hover: #2b6cb0;
     --text-inverted: #ffffff;
@@ -14,12 +14,19 @@
     --sidebar-border: #cbd5e0;
     --sidebar-text: #2d3748;
     --sidebar-hover-bg: #cbd5e0;
-    --sidebar-active-bg: #4a5568;
-    --sidebar-active-text: #ffffff;
+    --sidebar-active-bg: #4a5568; /* Default active background for list items */
+    --sidebar-active-text: #ffffff; /* Default active text for list items */
     --sidebar-delete-icon: #718096;
     --sidebar-delete-icon-hover: #ef4444;
     --scrollbar-thumb: #a0aec0;
     --scrollbar-track: #e2e8f0;
+
+    /* History Sidebar Specific (can inherit if same) */
+    --history-sidebar-button-bg: var(--button-primary-bg);
+    --history-sidebar-button-hover-bg: var(--button-primary-hover-bg);
+    --history-sidebar-button-text: var(--button-text);
+    --history-list-item-active-bg: var(--sidebar-active-bg);
+    --history-list-item-active-text: var(--sidebar-active-text);
 
     --center-content-bg: #ffffff;
     --chat-border: #cbd5e0;
@@ -50,7 +57,7 @@
     --button-primary-active-bg: #4c51bf;
     --button-secondary-bg: #718096;
     --button-secondary-hover-bg: #4a5568;
-    --button-icon-text: #ffffff; /* Text on icon buttons */
+    --button-icon-text: #ffffff;
     --button-text: #ffffff; /* General button text */
 
     --preview-button-bg: #38a169;
@@ -85,6 +92,7 @@
     --auto-send-start-hover-bg: #2f855a;
     --auto-send-stop-bg: #ef4444; /* Red */
     --auto-send-stop-hover-bg: #dc2626;
+
     --resizer-bg: #cbd5e0;
     --resizer-hover-bg: #667eea;
 }
@@ -102,12 +110,19 @@ body.dark-mode {
     --sidebar-border: #4a5568;
     --sidebar-text: #e2e8f0;
     --sidebar-hover-bg: #4a5568;
-    --sidebar-active-bg: #718096;
+    --sidebar-active-bg: #718096; /* Lighter active */
     --sidebar-active-text: #ffffff;
     --sidebar-delete-icon: #a0aec0;
     --sidebar-delete-icon-hover: #f56565;
     --scrollbar-thumb: #718096;
     --scrollbar-track: #2d3748;
+
+    /* History specific variables remain the same or inherit correctly */
+    --history-sidebar-button-bg: var(--button-primary-bg);
+    --history-sidebar-button-hover-bg: var(--button-primary-hover-bg);
+    --history-sidebar-button-text: var(--button-text);
+    --history-list-item-active-bg: var(--sidebar-active-bg);
+    --history-list-item-active-text: var(--sidebar-active-text);
 
     --center-content-bg: #1f2937; /* Darker center */
     --chat-border: #4a5568;
@@ -173,6 +188,7 @@ body.dark-mode {
     --auto-send-start-hover-bg: #276749;
     --auto-send-stop-bg: #c53030; /* Darker red */
     --auto-send-stop-hover-bg: #9b2c2c;
+
     --resizer-bg: #4a5568;
     --resizer-hover-bg: #a3bffa;
 }
@@ -186,30 +202,37 @@ body {
     color: var(--text-color);
     margin: 0;
     display: flex;
-    height: 100vh;
+    /* Use dynamic viewport height, with fallback */
+    height: 100vh; /* Fallback */
+    height: 100dvh; /* Use dynamic height */
     overflow: hidden;
 }
 
 .app-wrapper {
     display: flex;
     width: 100%;
-    height: 100%;
+    height: 100%; /* Inherit dynamic height */
     overflow: hidden;
+    position: relative; /* For mobile overlay */
 }
 
 /* === Sidebars (Common Styles) === */
 .sidebar {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    height: 100%; /* Inherit dynamic height */
     padding: 15px;
     flex-shrink: 0;
     overflow-x: hidden;
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
-    /* Default widths - JS will override from localStorage if available */
+    background-color: var(--sidebar-bg);
+    /* --- Default widths for desktop --- */
     width: 260px;
+    position: static; /* Default position */
+    transition: transform 0.3s ease-in-out, width 0.1s linear; /* Added width transition */
+    z-index: 10;
 }
 .sidebar::-webkit-scrollbar { width: 6px; }
 .sidebar::-webkit-scrollbar-track { background: var(--scrollbar-track); border-radius: 3px;}
@@ -217,85 +240,110 @@ body {
 
 /* Left Sidebar (History) */
 .history-sidebar {
-    background-color: var(--sidebar-bg);
-    border-right: none; /* Resizer handles border */
+    border-right: 1px solid var(--sidebar-border); /* Desktop border */
 }
-/* Right Sidebar (Settings) */
-.settings-sidebar {
-    background-color: var(--settings-sidebar-bg);
-    border-left: none; /* Resizer handles border */
-    width: 300px; /* Default right width */
-}
-
-/* === Resizer Handle === */
-.resizer {
-    flex-shrink: 0;
-    width: 5px;
-    background-color: var(--resizer-bg);
-    cursor: col-resize;
-    height: 100%;
-    transition: background-color 0.2s ease;
-}
-.resizer:hover, .resizer.active {
-    background-color: var(--resizer-hover-bg);
-}
-
-/* === Center Content === */
-.center-content {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    overflow: hidden;
-    background-color: var(--center-content-bg);
-    min-width: 300px; /* Minimum width */
-}
-
-/* --- Elements INSIDE Columns --- */
-
-/* History Sidebar Button & List */
-.history-sidebar .sidebar-button {
-    background-color: var(--button-primary-bg);
-    color: var(--button-text);
+/* --- Specific Styling for History Sidebar Button --- */
+.history-sidebar .sidebar-button#new-chat-button { /* Increased specificity */
+    background-color: var(--history-sidebar-button-bg); /* Use specific variable */
+    color: var(--history-sidebar-button-text); /* Use specific variable */
     border: none; border-radius: 8px; padding: 10px 15px; font-size: 0.95em;
     font-weight: 500; cursor: pointer; display: flex; align-items: center;
     justify-content: center; gap: 8px; margin-bottom: 15px; transition: background-color 0.2s ease;
     flex-shrink: 0;
 }
-.history-sidebar .sidebar-button:hover { background-color: var(--button-primary-hover-bg); }
-.history-sidebar .sidebar-button .material-symbols-outlined { font-size: 20px; }
-#chat-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; overflow-y: hidden; }
+.history-sidebar .sidebar-button#new-chat-button:hover {
+    background-color: var(--history-sidebar-button-hover-bg); /* Use specific variable */
+}
+.history-sidebar .sidebar-button#new-chat-button .material-symbols-outlined { font-size: 20px; }
+
+/* --- Specific Styling for History List Active Item --- */
+#chat-list { list-style: none; padding: 0; margin: 0; flex-grow: 1; overflow-y: hidden; /* Let parent scroll */ }
 #chat-list li { padding: 10px 12px; margin-bottom: 5px; border-radius: 6px; cursor: pointer; transition: background-color 0.2s ease, color 0.2s ease; font-size: 0.9em; color: var(--sidebar-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative; display: flex; justify-content: space-between; align-items: center; }
 #chat-list li:hover { background-color: var(--sidebar-hover-bg); }
-#chat-list li.active { background-color: var(--sidebar-active-bg); color: var(--sidebar-active-text); font-weight: 500; }
-.delete-chat-button { background: none; border: none; color: var(--sidebar-delete-icon); cursor: pointer; padding: 2px 4px; margin-left: 8px; font-size: 16px; line-height: 1; border-radius: 4px; transition: color 0.2s, background-color 0.2s; flex-shrink: 0; display: none; }
-#chat-list li:hover .delete-chat-button, #chat-list li.active .delete-chat-button { display: inline-block; }
-.delete-chat-button:hover { color: var(--sidebar-delete-icon-hover); background-color: rgba(0, 0, 0, 0.05); }
+#chat-list li.active {
+    background-color: var(--history-list-item-active-bg); /* Use specific variable */
+    color: var(--history-list-item-active-text); /* Use specific variable */
+    font-weight: 500;
+}
+/* Ensure active delete button color contrasts */
+#chat-list li.active .delete-chat-button {
+    color: var(--history-list-item-active-text); /* Match active text color */
+    opacity: 0.7; /* Make it slightly less prominent */
+     display: inline-block;
+}
+#chat-list li.active .delete-chat-button:hover {
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.1); /* Slight background on hover */
+     color: var(--sidebar-delete-icon-hover); /* Still red on hover */
+}
 
-/* Center Header, Log, Preview, Input */
+.delete-chat-button { background: none; border: none; color: var(--sidebar-delete-icon); cursor: pointer; padding: 2px 4px; margin-left: 8px; font-size: 16px; line-height: 1; border-radius: 4px; transition: color 0.2s, background-color 0.2s, opacity 0.2s; flex-shrink: 0; display: none; }
+#chat-list li:hover .delete-chat-button { display: inline-block; } /* Show on item hover */
+/* Delete button specific hover */
+.delete-chat-button:hover {
+    color: var(--sidebar-delete-icon-hover);
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+
+/* Right Sidebar (Settings) */
+.settings-sidebar {
+    border-left: 1px solid var(--settings-sidebar-border); /* Desktop border */
+    width: 300px;
+}
+
+/* === Resizer Handle (Hidden on Mobile by default) === */
+.resizer {
+    flex-shrink: 0; width: 5px; background-color: var(--resizer-bg);
+    cursor: col-resize; height: 100%; transition: background-color 0.2s ease;
+}
+.resizer:hover, .resizer.active { background-color: var(--resizer-hover-bg); }
+
+/* === Center Content === */
+.center-content {
+    flex-grow: 1; display: flex; flex-direction: column;
+    height: 100%; /* Inherit dynamic height */
+    overflow: hidden; background-color: var(--center-content-bg);
+    min-width: 300px; /* Minimum width for desktop */
+    position: relative;
+    z-index: 1;
+    transition: width 0.1s linear;
+}
 .chat-header {
-    padding: 12px 20px;
+    padding: 10px 15px;
     border-bottom: 1px solid var(--chat-header-border);
     flex-shrink: 0;
     background-color: var(--chat-header-bg);
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 #chat-header-title {
-    margin: 0;
-    font-size: 1.2em;
-    font-weight: 600;
-    color: var(--text-color-header);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    margin: 0; font-size: 1.1em; font-weight: 600;
+    color: var(--text-color-header); white-space: nowrap; overflow: hidden;
+    text-overflow: ellipsis; flex-grow: 1; text-align: center;
 }
+/* Header Icon Buttons (Hidden on Desktop by default) */
+.header-icon-button {
+    padding: 6px; background: none; color: var(--text-color-header);
+    border: none; border-radius: 50%; cursor: pointer;
+    display: none; /* Hide on desktop */
+    align-items: center; justify-content: center;
+    transition: background-color 0.2s ease;
+}
+.header-icon-button .material-symbols-outlined { font-size: 24px; }
+.header-icon-button:hover { background-color: rgba(128, 128, 128, 0.2); }
+body.dark-mode .header-icon-button:hover { background-color: rgba(255, 255, 255, 0.15); }
+
 .chat-log {
-    flex-grow: 1;
-    overflow-y: auto;
+    flex-grow: 1; /* Allow log to take up available space */
+    overflow-y: auto; /* Enable scrolling */
     padding: 15px 20px;
     display: flex;
     flex-direction: column;
     gap: 15px;
     background-color: var(--chat-log-bg);
+    /* Scrollbar styles remain the same */
     scrollbar-width: thin;
     scrollbar-color: var(--scrollbar-thumb) var(--chat-log-bg);
 }
@@ -304,29 +352,22 @@ body {
 .chat-log::-webkit-scrollbar-thumb { background-color: var(--scrollbar-thumb); border-radius: 4px; }
 
 .image-preview-area {
-    flex-shrink: 0;
-    padding: 8px 20px 5px 20px;
+    flex-shrink: 0; padding: 8px 20px 5px 20px;
     background-color: var(--chat-input-area-bg);
     border-top: 1px solid var(--chat-border);
     display: flex; gap: 8px; flex-wrap: wrap; max-height: 80px; overflow-y: auto;
 }
 
 .chat-input-area {
-    display: flex;
-    padding: 10px 15px;
-    border-top: 1px solid var(--chat-border);
-    background-color: var(--chat-input-area-bg);
-    flex-shrink: 0;
-    align-items: center;
+    flex-shrink: 0; /* Prevent input area from shrinking */
+    display: flex; padding: 10px 15px; border-top: 1px solid var(--chat-border);
+    background-color: var(--chat-input-area-bg); align-items: center;
 }
 #user-input {
-    background-color: var(--input-bg);
-    border: 1px solid var(--input-border);
-    color: var(--text-color);
-    flex-grow: 1; padding: 10px 15px; border-radius: 22px; margin: 0 10px;
-    font-size: 1em; line-height: 1.4; outline: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    resize: none; min-height: 22px;
+    background-color: var(--input-bg); border: 1px solid var(--input-border);
+    color: var(--text-color); flex-grow: 1; padding: 10px 15px; border-radius: 22px;
+    margin: 0 10px; font-size: 1em; line-height: 1.4; outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease; resize: none; min-height: 22px;
 }
 #user-input::placeholder { color: var(--input-placeholder); opacity: 0.8; }
 #user-input:focus { border-color: var(--input-focus-border); box-shadow: 0 0 0 2px var(--input-focus-shadow); }
@@ -343,18 +384,15 @@ body {
 #upload-button { background-color: var(--button-secondary-bg); }
 #upload-button:hover { background-color: var(--button-secondary-hover-bg); }
 
-/* Settings Sidebar Content */
+/* --- Settings Sidebar Content --- */
 .settings-sidebar h2 {
     font-size: 1.3em; margin-top: 5px; margin-bottom: 20px; padding-bottom: 10px;
     border-bottom: 1px solid var(--setting-group-border); color: var(--text-color);
 }
 .setting-group {
-    margin-bottom: 20px; padding-bottom: 15px;
-    border-bottom: 1px solid var(--setting-group-border);
-    background-color: var(--setting-group-bg); /* Use variable */
-    border-radius: 8px;
-    padding: 15px;
-    border: 1px solid var(--setting-group-border);
+    margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--setting-group-border);
+    background-color: var(--setting-group-bg); border-radius: 8px;
+    padding: 15px; border: 1px solid var(--setting-group-border);
 }
 .setting-group:last-child { border-bottom: none; margin-bottom: 10px; }
 .setting-group h3 {
@@ -396,7 +434,6 @@ body {
      box-shadow: 0 0 0 2px var(--input-focus-shadow);
      outline: none;
 }
-
 .setting-item textarea { resize: vertical; min-height: 50px; }
 .setting-item input[type="range"] { cursor: pointer; }
 .setting-item input[type="number"] { text-align: right; width: 80px; flex-grow: 0; }
@@ -427,9 +464,7 @@ input[type=number] { -moz-appearance: textfield; }
 .toggle-switch-checkbox:focus + .toggle-switch-slider { box-shadow: 0 0 1px var(--toggle-switch-bg-on); }
 
 /* Auto-Send Styles */
-.auto-send-group {
-    border-top: 2px solid var(--button-primary-bg);
-}
+.auto-send-group { border-top: 2px solid var(--button-primary-bg); }
 .auto-send-group h3 { color: var(--button-primary-bg); }
 .auto-send-group .setting-item { flex-direction: column; align-items: stretch; }
 .auto-send-group label { text-align: left; flex-basis: auto; margin-bottom: 4px; }
@@ -446,7 +481,7 @@ input[type=number] { -moz-appearance: textfield; }
 #auto-send-button.active { background-color: var(--auto-send-stop-bg); }
 #auto-send-button.active:hover { background-color: var(--auto-send-stop-hover-bg); }
 
-/* --- Other existing styles (messages, code blocks, search, etc.) --- */
+/* --- Other Component Styles --- */
 /* Messages */
 .message { padding: 10px 15px; border-radius: 18px; max-width: 85%; word-wrap: break-word; line-height: 1.5; box-shadow: 0 2px 4px var(--message-shadow); position: relative; }
 .message p { margin: 0; }
@@ -489,4 +524,71 @@ pre code { font-family: inherit; background: none; padding: 0; margin: 0; color:
   vertical-align: middle; /* Improves alignment */
   line-height: 1; /* Prevent extra spacing */
   flex-shrink: 0; /* Prevent icons shrinking in flex layouts */
+  user-select: none; /* Prevent icon selection */
+}
+
+/* Mobile Overlay */
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 5; /* Below sidebars, above center content */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out, visibility 0s linear 0.3s; /* Delay hiding visibility */
+}
+.overlay.active {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s ease-in-out, visibility 0s linear 0s; /* Show immediately */
+}
+
+
+/* =========================================== */
+/* === Responsive Styles (Media Queries) === */
+/* =========================================== */
+
+/* Medium Screens / Tablets (~1024px and below) */
+@media (max-width: 1024px) {
+    #chat-header-title { font-size: 1.0em; } /* Smaller title */
+    .setting-item label:not(.toggle-switch-label) { flex-basis: 80px; } /* Reduce label width */
+}
+
+/* Small Screens / Mobile (~768px and below) */
+@media (max-width: 768px) {
+    .sidebar {
+        position: absolute; top: 0; bottom: 0; box-shadow: 0 0 15px rgba(0,0,0,0.2);
+        transform: translateX(-105%); background-color: var(--sidebar-bg);
+        border: none; width: 85vw; max-width: 300px; z-index: 10;
+        /* Ensure full height within the dynamic viewport */
+         height: 100%; /* Fallback */
+         height: 100dvh; /* Use dynamic height for sidebar too */
+    }
+    .history-sidebar { left: 0; }
+    .settings-sidebar { left: auto; right: 0; transform: translateX(105%); }
+    .sidebar.open { transform: translateX(0%); }
+    .resizer { display: none; } /* Hide resizers */
+    .center-content { width: 100%; min-width: 0; } /* Center takes full width */
+    .chat-header { padding: 8px 10px; gap: 5px; }
+    .header-icon-button { display: flex; } /* Show toggle buttons */
+    #chat-header-title { flex-grow: 1; text-align: center; } /* Center title */
+    .chat-log { padding: 10px; gap: 10px; }
+    .message { max-width: 90%; }
+    .chat-input-area { padding: 8px 10px; gap: 8px; }
+    .icon-button { width: 36px; height: 36px; }
+    .icon-button .material-symbols-outlined { font-size: 20px; }
+    #user-input { font-size: 0.95em; padding: 8px 12px; margin: 0 5px;}
+    /* Adjust settings layout */
+    .setting-group { padding: 10px; }
+    .setting-item { flex-direction: column; align-items: stretch; gap: 5px; }
+    .setting-item label:not(.toggle-switch-label) { text-align: left; flex-basis: auto; margin-bottom: 3px; }
+    .setting-item input[type="number"] { width: 100px; }
+    .setting-item .api-key-input-wrapper { flex-direction: column; align-items: stretch; gap: 8px; }
+    .setting-item .api-key-input-wrapper button { width: 100%; }
+     .auto-send-controls { flex-direction: column; align-items: stretch; }
+     #auto-send-interval { width: 100%; }
+     #auto-send-button { margin-top: 5px;}
 }
