@@ -2,8 +2,9 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
+    <!-- Responsive viewport meta tag -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 对话界面 (可调布局)</title>
+    <title>浅梦专属vip机器人</title>
     <!-- Google Material Symbols -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <link rel="stylesheet" href="style.css">
@@ -18,7 +19,7 @@
                 <span class="material-symbols-outlined">add_comment</span> 新对话
             </button>
             <ul id="chat-list">
-                <!-- Chat history items will be populated here -->
+                <!-- Chat history items populated by JS -->
             </ul>
         </div>
 
@@ -27,18 +28,24 @@
 
         <!-- === Center Content (Chat Log & Input) === -->
         <div class="center-content" id="center-content">
-            <header class="chat-header"> <!-- Minimal header for title -->
+            <header class="chat-header">
+                 <!-- Sidebar Toggle Buttons for Mobile -->
+                 <button id="toggle-history-button" class="header-icon-button" title="聊天记录">
+                     <span class="material-symbols-outlined">history</span>
+                 </button>
+
                  <h1 id="chat-header-title">AI 对话</h1>
+
+                 <button id="toggle-settings-button" class="header-icon-button" title="设置">
+                     <span class="material-symbols-outlined">settings</span>
+                 </button>
             </header>
             <div class="chat-log" id="chat-log">
-                <!-- Messages for the CURRENT chat will appear here -->
-                 <!-- Initial message will be added dynamically by JS -->
+                 <!-- Messages populated by JS -->
             </div>
-            <!-- Image Preview Area (Moved below log, above input) -->
-             <div class="image-preview-area" id="image-preview-area">
-                 <!-- Uploaded image thumbnails appear here -->
-             </div>
-             <!-- Main Input Area -->
+            <div class="image-preview-area" id="image-preview-area">
+                 <!-- Image previews populated by JS -->
+            </div>
             <div class="chat-input-area">
                  <button id="upload-button" class="icon-button" title="上传图片">
                      <span class="material-symbols-outlined">add_photo_alternate</span>
