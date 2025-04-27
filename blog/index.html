@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHENXI - 个人博客</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="cyberpunk-theme">
+    <!-- 加载动画 -->
+    <div class="loading-screen">
+        <div class="cyber-logo">
+            <span class="logo-text">C<span class="blink">_</span>DEV</span>
+            <div class="glow-effect"></div>
+        </div>
+    </div>
+
+    <!-- 星空背景 -->
+    <canvas id="starfield"></canvas>
+
+    <!-- 粒子跟随鼠标 -->
+    <canvas id="particleCanvas"></canvas>
+
+    <!-- 主题切换按钮 -->
+    <div class="theme-toggle">
+        <button id="themeButton"><i class="fas fa-adjust"></i></button>
+    </div>
+
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="logo">CHEN<span class="highlight">XI</span></div>
+        <ul class="nav-links">
+            <li><a href="#about" class="nav-link">关于我</a></li>
+            <li><a href="#skills" class="nav-link">技能</a></li>
+            <li><a href="#projects" class="nav-link">项目</a></li>
+            <li><a href="#contact" class="nav-link">联系我</a></li>
+        </ul>
+        <div class="burger">
+            <div class="line1"></div>
+            <div class="line2"></div>
+            <div class="line3"></div>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <main>
+        <!-- 英雄区块 -->
+        <section class="hero">
+            <div class="hero-content fade-in">
+                <h1>你好，我是 <span class="glitch" data-text="chenxi">chenxi</span></h1>
+                <h2>全栈开发者 & 数字创新者</h2>
+                <div class="social-icons">
+                    <a href="#" class="social-icon"><i class="fab fa-github"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-linkedin"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-codepen"></i></a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 关于我区块 -->
+        <section id="about" class="section">
+            <div class="section-container">
+                <h2 class="section-title">关于<span class="highlight">我</span></h2>
+                <div class="about-content">
+                    <div class="about-image">
+                        <div class="cyber-frame">
+                            <img src="images/1.png" alt="个人头像">
+                        </div>
+                    </div>
+                    <div class="about-text">
+                        <p>我是一位充满激情的全栈开发者，专注于创造身临其境的数字体验。拥有5年前端和3年后端开发经验，我善于将创意转化为代码，构建既美观又实用的应用程序。</p>
+                        <p>在技术飞速发展的时代，我不断学习新技术和方法论，保持在数字浪潮的前沿。我相信技术应当服务于人类需求，并致力于创造直观、高效且具有视觉冲击力的解决方案。</p>
+                        <p>当我不在编写代码时，你可以找到我在探索虚拟现实的新领域，参与开源项目，或者研究最新的人工智能趋势。</p>
+                        <div class="about-stats">
+                            <div class="stat">
+                                <span class="stat-number">50+</span>
+                                <span class="stat-label">完成项目</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-number">15+</span>
+                                <span class="stat-label">技术掌握</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-number">8+</span>
+                                <span class="stat-label">年编程经验</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 技能区块 -->
+        <section id="skills" class="section">
+            <div class="section-container">
+                <h2 class="section-title">技<span class="highlight">能</span></h2>
+                <div class="skills-categories">
+                    <div class="skill-category">
+                        <h3>前端开发</h3>
+                        <div class="skills-grid">
+                            <div class="skill-item" data-skill="HTML5">
+                                <i class="fab fa-html5"></i>
+                                <span>HTML5</span>
+                                <div class="skill-bar">
+                                    <div class="skill-level" style="width: 95%"></div>
+                                </div>
+                            </div>
+                            <div class="skill-item" data-skill="CSS3">
+                                <i class="fab fa-css3-alt"></i>
+                                <span>CSS3</span>
+                                <div class="skill-bar">
+                                    <div class="skill-level" style="width: 90%"></div>
+                                </div>
+                            </div>
+                            <div class="skill-item" data-skill="JavaScript">
+                                <i class="fab fa-js"></i>
+                                <span>JavaScript</span>
+                                <div class="skill-bar">
+                                    <div class="skill-level" style="width: 92%"></div>
+                                </div>
+                            </div>
+                            <div class="skill-item" data-skill="React">
+                                <i class="fab fa-react"></i>
+                                <span>React</span>
+                                <div class="skill-bar">
+                                    <div class="skill-level" style="width: 88%"></div>
+                                </div>
+                            </div>
+                            <div class="skill-item" data-skill="Vue">
+                                <i class="fab fa-vuejs"></i>
+                                <span>Vue</span>
+                                <div class="skill-bar">
+                                    <div class="skill-level" style="width: 85%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="skill-category">
+                        <h3>后端开发</h3>
+                        <div class="skills-grid">
+                            <div class="skill-item" data-skill="Node.js">
+                                <i class="fab fa-node-js"></i>
+                                <span>Node.js</span>
+                                <div class="skill-bar">
+                                    <div class="skill-level" style="width: 87%"></div>
+                                </div>
+                            </div>
+                            <div class="skill-item" data-skill="Python">
+                                <i class="fab fa-python"></i>
+                                <span>Python</span>
+                                <div class="skill-bar">
+                                    <div class="skill-level" style="width: 80%"></div>
+                                </div>
+                            </div>
+                            <div class="skill-item" data-skill="PHP">
+                                <i class="fab fa-php"></i>
+                                <span>PHP</span>
+                                <div class="skill-bar">
+                                    <div class="skill-level" style="width: 75%"></div>
+                                </div>
+                            </div>
+                            <div class="skill-item" data-skill="MongoDB">
+                                <i class="fas fa-database"></i>
+                                <span>MongoDB</span>
+                                <div class="skill-bar">
+                                    <div class="skill-level" style="width: 82%"></div>
+                                </div>
+                            </div>
+                            <div class="skill-item" data-skill="MySQL">
+                                <i class="fas fa-server"></i>
+                                <span>MySQL</span>
+                                <div class="skill-bar">
+                                    <div class="skill-level" style="width: 78%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="skill-category">
+                        <h3>工具 & 其他</h3>
+                        <div class="skills-grid">
+                            <div class="skill-item" data-skill="Git">
+                                <i class="fab fa-git-alt"></i>
+                                <span>Git</span>
+                                <div class="skill-bar">
+                                    <div class="skill-level" style="width: 88%"></div>
+                                </div>
+                            </div>
+                            <div class="skill-item" data-skill="Docker">
+                                <i class="fab fa-docker"></i>
+                                <span>Docker</span>
+                                <div class="skill-bar">
+                                    <div class="skill-level" style="width: 76%"></div>
+                                </div>
+                            </div>
+                            <div class="skill-item" data-skill="AWS">
+                                <i class="fab fa-aws"></i>
+                                <span>AWS</span>
+                                <div class="skill-bar">
+                                    <div class="skill-level" style="width: 72%"></div>
+                                </div>
+                            </div>
+                            <div class="skill-item" data-skill="Figma">
+                                <i class="fab fa-figma"></i>
+                                <span>Figma</span>
+                                <div class="skill-bar">
+                                    <div class="skill-level" style="width: 80%"></div>
+                                </div>
+                            </div>
+                            <div class="skill-item" data-skill="Responsive">
+                                <i class="fas fa-mobile-alt"></i>
+                                <span>响应式设计</span>
+                                <div class="skill-bar">
+                                    <div class="skill-level" style="width: 90%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 项目区块 -->
+        <section id="projects" class="section">
+            <div class="section-container">
+                <h2 class="section-title">项<span class="highlight">目</span></h2>
+                <div class="projects-grid">
+                    <div class="project-card">
+                        <div class="project-image">
+                            <img src="images/2.jpg" alt="项目预览">
+                            <div class="project-overlay">
+                                <div class="project-links">
+                                    <a href="http://chenxii.dpdns.org/v2/" class="project-link"><i class="fas fa-external-link-alt"></i></a>
+                                    <a href="#" class="project-link"><i class="fab fa-github"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="project-info">
+                            <h3 class="project-title">NeoCity - 虚拟城市探索器</h3>
+                            <p class="project-desc">一个基于WebGL的沉浸式虚拟城市体验，用户可以在赛博朋克风格的城市中自由探索。</p>
+                            <div class="project-tech">
+                                <span class="tech-tag">Three.js</span>
+                                <span class="tech-tag">WebGL</span>
+                                <span class="tech-tag">JavaScript</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="project-card">
+                        <div class="project-image">
+                            <img src="images/3.jpeg" alt="项目预览">
+                            <div class="project-overlay">
+                                <div class="project-links">
+                                    <a href="http://chenxii.dpdns.org/v3/" class="project-link"><i class="fas fa-external-link-alt"></i></a>
+                                    <a href="#" class="project-link"><i class="fab fa-github"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="project-info">
+                            <h3 class="project-title">DataViz - 数据可视化平台</h3>
+                            <p class="project-desc">动态数据可视化平台，将复杂数据转化为交互式图表和动画。</p>
+                            <div class="project-tech">
+                                <span class="tech-tag">D3.js</span>
+                                <span class="tech-tag">React</span>
+                                <span class="tech-tag">Node.js</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="project-card">
+                        <div class="project-image">
+                            <img src="images/4.jpg" alt="项目预览">
+                            <div class="project-overlay">
+                                <div class="project-links">
+                                    <a href="http://chenxii.dpdns.org/world" class="project-link"><i class="fas fa-external-link-alt"></i></a>
+                                    <a href="#" class="project-link"><i class="fab fa-github"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="project-info">
+                            <h3 class="project-title">AI Assistant - 智能对话系统</h3>
+                            <p class="project-desc">基于自然语言处理的智能助手，可以理解复杂查询并提供上下文相关的回应。</p>
+                            <div class="project-tech">
+                                <span class="tech-tag">Python</span>
+                                <span class="tech-tag">NLP</span>
+                                <span class="tech-tag">Vue.js</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="project-card">
+                        <div class="project-image">
+                            <img src="images/5.jpg" alt="项目预览">
+                            <div class="project-overlay">
+                                <div class="project-links">
+                                    <a href="http://chenxii.dpdns.org/xiaomiao/" class="project-link"><i class="fas fa-external-link-alt"></i></a>
+                                    <a href="#" class="project-link"><i class="fab fa-github"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="project-info">
+                            <h3 class="project-title">CryptoTracker - 加密货币分析</h3>
+                            <p class="project-desc">实时追踪和分析加密货币市场，提供详细图表和预测分析。</p>
+                            <div class="project-tech">
+                                <span class="tech-tag">React</span>
+                                <span class="tech-tag">Web3.js</span>
+                                <span class="tech-tag">Express</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 联系区块 -->
+        <section id="contact" class="section">
+            <div class="section-container">
+                <h2 class="section-title">联系<span class="highlight">我</span></h2>
+                <div class="contact-content">
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <p>contact@cyberdev.com</p>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <p>数字城市，赛博区，代码街1024号</p>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-phone-alt"></i>
+                            <p>+86 123 4567 8901</p>
+                        </div>
+                        <div class="social-icons contact-social">
+                            <a href="#" class="social-icon"><i class="fab fa-github"></i></a>
+                            <a href="#" class="social-icon"><i class="fab fa-linkedin"></i></a>
+                            <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                            <a href="#" class="social-icon"><i class="fab fa-codepen"></i></a>
+                        </div>
+                    </div>
+                    
+                    <form class="contact-form">
+                        <div class="form-group">
+                            <input type="text" id="name" name="name" required>
+                            <label for="name">您的姓名</label>
+                            <div class="form-bar"></div>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" id="email" name="email" required>
+                            <label for="email">电子邮箱</label>
+                            <div class="form-bar"></div>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="subject" name="subject" required>
+                            <label for="subject">主题</label>
+                            <div class="form-bar"></div>
+                        </div>
+                        <div class="form-group">
+                            <textarea id="message" name="message" required></textarea>
+                            <label for="message">留言内容</label>
+                            <div class="form-bar"></div>
+                        </div>
+                        <button type="submit" class="cyber-button">
+                            <span>发送消息</span>
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 回到顶部按钮 -->
+    <button id="backToTop" class="back-to-top">
+        <i class="fas fa-chevron-up"></i>
+    </button>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-logo">CHEN<span class="highlight">XI</span></div>
+            <p class="footer-copyright">&copy; 2025 CHENXI. 保留所有权利.</p>
+            <div class="footer-links">
+                <a href="#about">关于</a>
+                <a href="#skills">技能</a>
+                <a href="#projects">项目</a>
+                <a href="#contact">联系</a>
+            </div>
+            <div class="social-icons footer-social">
+                <a href="#" class="social-icon"><i class="fab fa-github"></i></a>
+                <a href="#" class="social-icon"><i class="fab fa-linkedin"></i></a>
+                <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="social-icon"><i class="fab fa-codepen"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
