@@ -1,44 +1,103 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
+    <!-- Responsive viewport meta tag -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sky: Children of the Light</title>
+    <title>随机网友</title>
+    <!-- Google Material Symbols -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <div class="logo">
-            <img src="logo.jpg" alt="Sky: Children of the Light Logo">
-        </div>
-        <nav>
-            <ul>
-                <li><a href="#">Home</a></li>
-                <li><a href="#">Tools</a></li>
-                <li><a href="#">Guide</a></li>
-                <li><a href="#">Customer Service</a></li>
-                <li><a href="#">With Light</a></li>
-                <li><a href="#">Ask</a></li>
+    <!-- Main application wrapper for 3-column flex layout -->
+    <div class="app-wrapper">
+
+        <!-- === Left Sidebar (Chat History) === -->
+        <div class="sidebar history-sidebar" id="history-sidebar">
+            <button id="new-chat-button" class="sidebar-button" title="开始新对话">
+                <span class="material-symbols-outlined">add_comment</span> 新对话
+            </button>
+            <ul id="chat-list">
+                <!-- Chat history items populated by JS -->
             </ul>
-        </nav>
-    </header>
-    <main>
-        <div class="hero-image">
-            <img src="/images/hero-image.jpg" alt="A screenshot of the game Sky: Children of the Light">
         </div>
-        <div class="quote">
-            <p>“It's beautiful just to weet.”</p>
-            <p>“When you meet someone, you have a chance to be lucky.”</p>
-            <p>“Everything has cracks, that's where the light comes in.”</p>
-            <p>“Hope for the best, don't be too busy. Follow the light and meet the light.”</p>
-        </div>
-        <div class="buttons">
-            <button>Learn More</button>
-            <button>Download</button>
-        </div>
-    </main>
-    <footer>
-        <p>&copy; 2023 Sky: Children of the Light</p>
-    </footer>
-</body>
-</html>
+
+        <!-- === Resizer Handle (Left/Center) === -->
+        <div class="resizer" id="resizer-left"></div>
+
+        <!-- === Center Content (Chat Log & Input) === -->
+        <div class="center-content" id="center-content">
+            <header class="chat-header">
+                 <!-- Sidebar Toggle Buttons for Mobile -->
+                 <button id="toggle-history-button" class="header-icon-button" title="聊天记录">
+                     <span class="material-symbols-outlined">history</span>
+                 </button>
+
+                 <h1 id="chat-header-title">AI 对话</h1>
+
+                 <button id="toggle-settings-button" class="header-icon-button" title="设置">
+                     <span class="material-symbols-outlined">settings</span>
+                 </button>
+            </header>
+            <div class="chat-log" id="chat-log">
+                 <!-- Messages populated by JS -->
+            </div>
+            <div class="image-preview-area" id="image-preview-area">
+                 <!-- Image previews populated by JS -->
+            </div>
+            <div class="chat-input-area">
+                 <button id="upload-button" class="icon-button" title="上传图片">
+                     <span class="material-symbols-outlined">add_photo_alternate</span>
+                 </button>
+                 <input type="file" id="image-upload-input" accept="image/*" multiple style="display: none;">
+                 <input type="text" id="user-input" placeholder="输入消息或上传图片...">
+                 <button id="send-button" class="icon-button" title="发送消息">
+                     <span class="material-symbols-outlined">send</span>
+                 </button>
+            </div>
+        </div> <!-- End center-content -->
+
+        <!-- === Resizer Handle (Center/Right) === -->
+        <div class="resizer" id="resizer-right"></div>
+
+        <!-- === Right Sidebar (Settings & Auto-Send) === -->
+        <div class="sidebar settings-sidebar" id="settings-sidebar">
+            <h2>设置</h2>
+
+            <!-- API Key & Model Section -->
+            <div class="setting-group">
+                 <h3>连接</h3>
+                 <div class="setting-item api-key-setting">
+                     <label for="api-key-input">API Key:</label>
+                     <div class="api-key-input-wrapper">
+                         <input type="password" id="api-key-input" placeholder="输入 Google AI Key">
+                         <button id="save-key-button" title="保存密钥 (浏览器本地存储)">保存</button>
+                     </div>
+                 </div>
+                 <div class="setting-item">
+                    <label for="model-selector">模型:</label>
+                    <select id="model-selector" title="选择要使用的 AI 模型"></select>
+                 </div>
+            </div>
+
+            <!-- System Prompt Section -->
+             <div class="setting-group">
+                 <h3>AI 行为</h3>
+                <div class="setting-item system-instruction-setting">
+                    <label for="system-instruction-input">系统指令:</label>
+                    <textarea id="system-instruction-input" rows="3" placeholder="可选：设置 AI 的角色或行为 (例如 '你是一个Python专家')" title="设置 AI 的整体行为或角色"></textarea>
+                </div>
+            </div>
+
+            <!-- Generation Parameters Section -->
+            <div class="setting-group">
+                 <h3>生成参数</h3>
+                 <div class="setting-item temperature-setting">
+                    <label for="temperature-slider">Temperature:</label>
+                    <input type="range" id="temperature-slider" min="0" max="2" step="0.1" value="1.0" title="调整模型创造性 (0=更固定, 2=更随机)">
+                     <span id="temperature-value">1.0</span>
+                 </div>
+                 <div class="setting-item topp-setting">
+                     <label for="topp-slider">Top P:</label>
+                     <input type="range" id="topp-slider" min="0" max="1" step="0.05" value="1.0" title="累
