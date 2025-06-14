@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Homework 5-1: 密码锁设计解析</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            line-height: 1.8;
+            margin: 20px;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3 {
+            color: #0056b3;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+        h1 { font-size: 2em; }
+        h2 { font-size: 1.5em; margin-top: 40px;}
+        h3 { font-size: 1.2em; border-bottom: 1px dashed #ccc; }
+        pre {
+            background-color: #282c34;
+            color: #abb2bf;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            white-space: pre-wrap; /* 自动换行 */
+            word-wrap: break-word; /* 强制换行 */
+        }
+        code {
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .comment {
+            color: #5c6370;
+            font-style: normal; /* 注释字体改为非斜体 */
+        }
+        .keyword {
+            color: #c678dd;
+        }
+        .number {
+            color: #d19a66;
+        }
+        .string {
+            color: #98c379;
+        }
+        .qa-block {
+            background-color: #e9f5ff;
+            border-left: 5px solid #007bff;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .question {
+            font-weight: bold;
+            color: #0056b3;
+        }
+        .answer {
+            margin-top: 5px;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        .summary-block {
+            background-color: #e2e8f0;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #4a5568;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Homework 5-1: 密码锁设计全解析</h1>
+        <p>本项目实现一个基于FPGA的密码锁。其核心功能是：通过有限状态机（FSM）判断用户输入的密码（1-3-4-2）是否正确。第一次输入正确，LED灯以2Hz频率闪烁；第二次输入正确，LED以1Hz频率闪烁；输入错误则有相应的提示。同时，数码管会实时显示用户输入的数字。</p>
+
+        <h2>代码及逐行注释</h2>
+        <pre><code><span class="keyword">module</span> <span class="string">Homework5_1</span>(<span class="string">clock</span>, <span class="string">K</span>, <span class="string">Seg7</span>, <span class="string">sel</span>, <span class="string">LED</span>);
+    <span class="comment">// 模块声明，定义了输入输出端口</span>
+    <span class="keyword">input</span>  		        <span class="string">clock</span>;      <span class="comment">// 输入：50MHz主时钟信号</span>
+    <span class="keyword">input</span>  		[<span class="number">3</span>:<span class="number">1</span>]<span class="string">K</span>;          <span class="comment">// 输入：4个按键的输入信号 (K1, K2, K3, K4)</span>
+    <span class="keyword">output</span> <span class="keyword">reg</span>  [<span class="number">5</span>:<span class="number">0</span>]<span class="string">LED</span>;        <span class="comment">// 输出：6个LED灯的控制信号</span>
+    <span class="keyword">output</span> <span class="keyword">reg</span>  [<span class="number">7</span>:<span class="number">0</span>]<span class="string">Seg7</span>;       <span class="comment">// 输出：七段数码管的段选信号</span>
+    <span class="keyword">output</span> <span class="keyword">reg</span>    [<span class="number">3</span>:<span class="number">0</span>]<span class="string">sel</span>;        <span class="comment">// 输出：四位七段数码管的位选信号</span>
+
+    <span class="comment">// 内部信号定义</span>
+    <span class="keyword">wire</span> 			[<span class="number">4</span>:<span class="number">1</span>]<span class="string">DIF</span>;        <span class="comment">// wire类型，用于连接按键消抖模块的输出</span>
+    <span class="keyword">reg</span>			[<span class="number">2</span>:<span class="number">0</span>]<span class="string">DIN</span>, <span class="string">N</span>, <span class="string">N1</span>, <span class="string">N2</span>, <span class="string">N3</span>, <span class="string">N4</span>;	<span class="comment">// reg类型，DIN用于存储解码后的按键值，N1-N4用于存储待显示的数字</span>
+    <span class="keyword">parameter</span>	[<span class="number">3</span>:<span class="number">0</span>]<span class="string">S0</span>=<span class="number">4'b0000</span>, <span class="string">S1</span>=<span class="number">4'b0001</span>, <span class="string">S2</span>=<span class="number">4'b0010</span>, <span class="string">S3</span>=<span class="number">4'b0011</span>, <span class="string">S4</span>=<span class="number">4'b0100</span>, <span class="string">S5</span>=<span class="number">4'b0101</span>, <span class="string">S6</span>=<span class="number">4'b0110</span>, <span class="string">S7</span>=<span class="number">4'b0111</span>, <span class="string">S8</span>=<span class="number">4'b1000</span>, <span class="string">S9</span>=<span class="number">4'b1001</span>, <span class="string">S10</span>=<span class="number">4'b1010</span>; <span class="comment">// 定义FSM的状态参数</span>
+    <span class="keyword">reg</span> 			[<span class="number">3</span>:<span class="number">0</span>]<span class="string">ps</span>, <span class="string">ns</span>;       <span class="comment">// reg类型，ps: present state (当前状态), ns: next state (下一状态)</span>
+    <span class="keyword">reg</span>         [<span class="number">25</span>:<span class="number">0</span>]<span class="string">Q</span>;          <span class="comment">// reg类型，用于数码管扫描频率的分频计数器</span>
+    <span class="keyword">reg</span>         [<span class="number">2</span>:<span class="number">0</span>]<span class="string">Q1</span>, <span class="string">Q2</span>;       <span class="comment">// reg类型，用于控制LED流水灯模式的计数器</span>
+    <span class="keyword">reg</span>         <span class="string">pulse</span>, <span class="string">pulse2</span>;   <span class="comment">// reg类型，存储分频后产生的1Hz和2Hz脉冲信号</span>
+    <span class="keyword">wire</span>        [<span class="number">1</span>:<span class="number">0</span>]<span class="string">scan</span>;       <span class="comment">// wire类型，数码管的扫描选择信号</span>
+    <span class="keyword">reg</span>         [<span class="number">21</span>:<span class="number">0</span>]<span class="string">count</span>;      <span class="comment">// reg类型，用于1Hz脉冲信号的分频计数器</span>
+    <span class="keyword">reg</span>         [<span class="number">20</span>:<span class="number">0</span>]<span class="string">count2</span>;     <span class="comment">// reg类型，用于2Hz脉冲信号的分频计数器</span>
+    <span class="keyword">reg</span>         [<span class="number">2</span>:<span class="number">0</span>]<span class="string">ok</span>;         <span class="comment">// reg类型，状态标志位。0:初始/错误, 1:第一次成功, 2:第二次成功, 3:彻底失败</span>
+<div class="summary-block"><b>总结：</b>此部分为模块的声明和内部信号定义。<code>input</code>和<code>output</code>定义了模块与外部的接口。内部使用<code>wire</code>连接不需要存储的信号，<code>reg</code>定义需要存储状态的信号，如FSM的状态（ps, ns）、计数器（Q, count）和标志位（ok）。<code>parameter</code>为状态机定义了易于理解的符号名称。</div>
+    <span class="comment">// --- 按键消抖模块实例化 ---</span>
+    <span class="keyword">Press</span>  <span class="string">P1</span>(<span class="string">clock</span>, <span class="string">K</span>[<span class="number">1</span>], <span class="string">DIF</span>[<span class="number">1</span>]);		
+    <span class="keyword">Press</span>  <span class="string">P2</span>(<span class="string">clock</span>, <span class="string">K</span>[<span class="number">2</span>], <span class="string">DIF</span>[<span class="number">2</span>]);
+    <span class="keyword">Press</span>  <span class="string">P3</span>(<span class="string">clock</span>, <span class="string">K</span>[<span class="number">3</span>], <span class="string">DIF</span>[<span class="number">3</span>]);
+    <span class="keyword">Press</span>  <span class="string">P4</span>(<span class="string">clock</span>, <span class="string">K</span>[<span class="number">4</span>], <span class="string">DIF</span>[<span class="number">4</span>]);
+<div class="summary-block"><b>总结：</b>这里实例化了4个名为`Press`的子模块，用于处理按键的抖动问题。每个按键（K[1]到K[4]）都连接到一个独立的消抖模块，输出一个干净的、单次有效的脉冲信号（DIF[1]到DIF[4]），以防止一次按键被误读为多次。</div>
+    <span class="comment">// --- 按键值解码 ---</span>
+    <span class="keyword">always</span>@(*)
+    <span class="keyword">begin</span>
+        <span class="keyword">case</span>(<span class="string">K</span>) <span class="comment">// 组合逻辑：将按键输入K转换为数值DIN</span>
+            <span class="number">4'b1110</span> : <span class="string">DIN</span>=<span class="number">1</span>; <span class="comment">// K1按下</span>
+            <span class="number">4'b1101</span> : <span class="string">DIN</span>=<span class="number">2</span>; <span class="comment">// K2按下</span>
+            <span class="number">4'b1011</span> : <span class="string">DIN</span>=<span class="number">3</span>; <span class="comment">// K3按下</span>
+            <span class="number">4'b0111</span> : <span class="string">DIN</span>=<span class="number">4</span>; <span class="comment">// K4按下</span>
+            <span class="keyword">default</span> : <span class="string">DIN</span>=<span class="number">0</span>; <span class="comment">// 无按键或多键按下</span>
+        <span class="keyword">endcase</span> 
+    <span class="keyword">end</span> 
+<div class="summary-block"><b>总结：</b>这是一个组合逻辑块，作用是“按键解码器”。它将4个独立的按键信号`K`转换为一个单一的数值`DIN`。这样做的好处是简化了后续状态机判断逻辑，使其只需要判断`DIN`的值，而不需要处理复杂的`K`的位组合。</div>
+    <span class="comment">// --- FSM 状态转移逻辑 (时序逻辑) ---</span>
+    <span class="keyword">always</span>@(<span class="keyword">posedge</span> <span class="string">clock</span>)
+    <span class="keyword">begin</span>	
+        <span class="keyword">if</span>(<span class="string">DIF</span>[<span class="number">1</span>]==<span class="number">1</span> || <span class="string">DIF</span>[<span class="number">2</span>]==<span class="number">1</span> || <span class="string">DIF</span>[<span class="number">3</span>]==<span class="number">1</span> || <span class="string">DIF</span>[<span class="number">4</span>]==<span class="number">1</span>)
+            <span class="string">ps</span> <= <span class="string">ns</span>; <span class="comment">// 只有当检测到按键按下时，才在时钟上升沿更新当前状态</span>
+    <span class="keyword">end</span> 
+<div class="summary-block"><b>总结：</b>这是FSM的“状态寄存器”部分，属于时序逻辑。它规定了状态机何时更新状态：只有在时钟的上升沿，并且检测到任意一个按键被按下（`DIF`信号有效）时，当前状态`ps`才会更新为下一状态`ns`。这确保了状态机只在有新事件发生时才跳转。</div>
+    <span class="comment">// --- FSM 下一状态和输出逻辑 (组合逻辑) ---</span>
+    <span class="keyword">always</span>@(*)
+    <span class="keyword">begin</span>
+        <span class="keyword">case</span>(<span class="string">ps</span>)
+            <span class="string">S0</span>: <span class="keyword">begin</span>...<span class="keyword">end</span>
+            ...
+            <span class="string">S10</span>: <span class="keyword">begin</span>...<span class="keyword">end</span>	  
+	    <span class="keyword">endcase</span> 
+    <span class="keyword">end</span> 
+<div class="summary-block"><b>总结：</b>这是FSM的“大脑”部分，属于组合逻辑。它根据当前状态`ps`和解码后的按键输入`DIN`，来决定下一状态`ns`是什么，并设置输出标志位`ok`。这个模块实现了密码锁的核心逻辑：S0-S4是第一次密码验证流程，S5-S9是第二次验证流程，S10是最终失败状态。`ok`的值（1、2、3）则用来告诉其他模块（如LED驱动）当前密码验证的结果。</div>
+    <span class="comment">// --- 七段数码管驱动逻辑 ---</span>
+    <span class="keyword">always</span>@(<span class="keyword">posedge</span> <span class="string">clock</span>) <span class="keyword">begin</span> <span class="string">Q</span> <= <span class="string">Q</span> + <span class="number">1</span>; <span class="keyword">end</span>
+    <span class="keyword">assign</span> <span class="string">scan</span> = <span class="string">Q</span>[<span class="number">19</span>:<span class="number">18</span>]; <span class="comment">// 频率约为47Hz</span>
+    ...
+<div class="summary-block"><b>总结：</b>这部分负责驱动4位七段数码管。它通过一个高频计数器`Q`产生一个约47Hz的扫描信号`scan`。这个`scan`信号被用来循环选择（位选`sel`）四个数码管中的一个点亮，并同时选择（数据选择`N`）要显示在该位置的数字。最后，将这个数字转换为七段码`Seg7`输出，从而实现动态扫描显示，让人眼看起来是所有数字同时亮着。</div>
+    <span class="comment">// --- LED 流水灯频率生成 ---</span>
+    <span class="keyword">always</span>@(<span class="keyword">posedge</span> <span class="string">clock</span>) <span class="keyword">begin</span> ... <span class="keyword">end</span> <span class="comment">// 生成1Hz脉冲</span>
+    <span class="keyword">always</span>@(<span class="keyword">posedge</span> <span class="string">pulse</span>) <span class="keyword">begin</span> <span class="string">Q1</span> <= <span class="string">Q1</span> + <span class="number">1</span>; <span class="keyword">end</span>
+    <span class="keyword">always</span>@(<span class="keyword">posedge</span> <span class="string">clock</span>) <span class="keyword">begin</span> ... <span class="keyword">end</span> <span class="comment">// 生成2Hz脉冲</span>
+    <span class="keyword">always</span>@(<span class="keyword">posedge</span> <span class="string">pulse2</span>) <span class="keyword">begin</span> <span class="string">Q2</span> <= <span class="string">Q2</span> + <span class="number">1</span>; <span class="keyword">end</span>
+<div class="summary-block"><b>总结：</b>此部分用于生成两种不同频率的信号来控制LED的闪烁速度。它使用两个独立的分频器，将50MHz的主时钟分别分频，产生一个1Hz的脉冲信号`pulse`和一个2Hz的脉冲信号`pulse2`。这两个脉冲信号再分别驱动两个计数器`Q1`和`Q2`，用于后续生成不同的流水灯效果。</div>
+    <span class="comment">// --- LED 输出逻辑 ---</span>
+    <span class="keyword">always</span>@(*)
+    <span class="keyword">begin</span>
+        <span class="keyword">if</span> (<span class="string">ok</span> == <span class="number">0</span>) ...
+        <span class="keyword">else if</span>(<span class="string">ok</span> == <span class="number">1</span>) ...
+        <span class="keyword">else if</span>(<span class="string">ok</span> == <span class="number">2</span>) ...
+        <span class="keyword">else if</span>(<span class="string">ok</span> == <span class="number">3</span>) ...
+    <span class="keyword">end</span>
+<span class="keyword">endmodule</span>
+<div class="summary-block"><b>总结：</b>这是LED的最终输出控制逻辑。它根据FSM传递过来的`ok`标志位的值，来决定执行哪种LED显示模式。当`ok`为1或2时，它会根据对应的频率计数器（`Q1`或`Q2`）的值，通过`case`语句来循环改变LED的亮灭状态，从而实现不同速度的流水灯效果。当`ok`为0或3时，它会显示一个固定的状态（如全灭或错误指示）。</div></code></pre>
+
+        <h2>面试问答回顾</h2>
+        <div class="qa-block">
+            <p class="question">老师：你这个作业的状态图画了吗？</p>
+            <p class="answer">学生：没来得及画，可以直接根据代码讲。</p>
+        </div>
+        <div class="qa-block">
+            <p class="question">老师：那你讲一下你的有限状态机是怎么设计的。</p>
+            <p class="answer">学生：通过状态机S0到S3来验证第一次密码（1-3-4-2）。如果正确，进入S4状态，并将`ok`标志位置为1。如果中途出错，则跳转到S5，开始第二次密码验证流程（S5-S8）。如果第二次也正确，进入S9状态，并将`ok`标志位置为2。如果第二次也错了，进入S10，`ok`标志位置为3。</p>
+        </div>
+        <div class="qa-block">
+            <p class="question">老师：你的程序怎么区分第一次成功和第二次成功，从而让流水灯以不同的频率闪烁？</p>
+            <p class="answer">学生：我用了一个`ok`标志位。第一次成功时`ok`为1，第二次成功时`ok`为2。在LED的输出逻辑里，根据`ok`的值来选择不同的`case`语句，一个`case`语句使用1Hz的计数器`Q1`，另一个使用2Hz的计数器`Q2`。</p>
+        </div>
+        <div class="qa-block">
+            <p class="question">老师：你算一下数码管的扫描频率是怎么得出的？</p>
+            <p class="answer">学生：主时钟是50MHz，分频计数器是26位。我取了第19和18位（Q[19:18]）作为扫描信号，所以分频系数是2^18。频率是 50,000,000 / 262,144 ≈ 190Hz。因为是两位扫描信号，一个完整周期需要4个状态，所以最终扫描频率是 190 / 4 ≈ 47Hz，在这个频率下人眼看不到闪烁。</p>
+        </div>
+
+        <h2>潜在面试追问</h2>
+        <ul>
+            <li>
+                <p class="question">问：你在FSM的状态转移逻辑（`always@(posedge clock)`）里，为什么只在检测到按键（DIF为高）时才更新状态？如果去掉这个`if`判断会怎么样？</p>
+                <p class="answer">答：只在按键按下时更新状态，是为了确保状态机只在有新输入时才进行判断和跳转，否则它会停留在当前状态等待。如果去掉这个`if`判断，状态机将在每个时钟周期都根据`ns`更新`ps`。这意味着，如果我按下一个正确的键（比如1），`ns`会变成S1，但如果我没有在下一个时钟周期立即按3，`ns`又会被组合逻辑（`else ns=S5`）置为S5，导致状态机立即跳转到错误路径，无法正确识别连续按键。所以这个`if`是保持当前状态、等待下一次有效输入的关键。</p>
+            </li>
+            <li>
+                <p class="question">问：你的代码中，第一次成功后用2Hz闪烁，第二次成功后用1Hz闪烁，但视频演示的效果似乎是反的。这是为什么？</p>
+                <p class="answer">答：老师您观察得很仔细。这是我代码里的一个笔误。在LED输出逻辑中，`if(ok==1)`后面我用了`case(Q2)`，而`if(ok==2)`后面用了`case(Q1)`。`Q1`是由1Hz脉冲驱动的，`Q2`是由2Hz脉冲驱动的。所以实际上第一次成功对应的是2Hz，第二次成功对应的是1Hz。如果想让效果与题目要求一致，我应该交换这两个`case`块的控制变量，即`ok==1`时使用`case(Q1)`，`ok==2`时使用`case(Q2)`。</p>
+            </li>
+            <li>
+                <p class="question">问：我看你定义了很多状态，比如S0到S10。如果密码更长，状态会更多。有没有更节省资源或更模块化的方法来设计这个密码锁？</p>
+                <p class="answer">答：可以。一种更模块化的方法是使用一个计数器来记录当前输入密码的位数，再用一个寄存器数组来存储正确的密码序列。每当有按键输入时，就用输入值与密码序列中对应位置的值进行比较。如果匹配，计数器加一；如果不匹配，计数器清零。当计数器达到密码长度时，就表示成功。这种方法不需要为每个密码位定义一个新状态，扩展性更好，状态机的结构也更简单。</p>
+            </li>
+        </ul>
+
+        <h2>相关基础知识</h2>
+        <ul>
+            <li>
+                <p class="question">Verilog中 `reg` 和 `wire` 有什么区别？</p>
+                <p class="answer">答：`wire` 主要用于连接模块或表示组合逻辑的输出，它本身不存储值，像一根导线。`reg` 用于表示寄存器或存储元件，它能保持数据直到下一次被赋值。`reg` 必须在 `always` 块或 `initial` 块中被赋值。</p>
+            </li>
+            <li>
+                <p class="question">什么是阻塞赋值 (`=`) 和非阻塞赋值 (`<=`)？应该在什么场合使用？</p>
+                <p class="answer">答：阻塞赋值 (`=`) 是顺序执行的，下一条语句会等待当前赋值完成后才执行。非阻塞赋值 (`<=`) 是并行执行的，在同一个 `always` 块中，所有非阻塞赋值会在块结束时同时更新。<strong>经验法则：在时序逻辑（`always @(posedge clock)`）中使用非阻塞赋值 `(<=)`；在组合逻辑（`always @(*)`）中使用阻塞赋值 (`=`)。</strong></p>
+            </li>
+            <li>
+                <p class="question">解释一下什么是有限状态机（FSM）？</p>
+                <p class="answer">答：FSM是一种数学模型，它有有限个状态，并能在这些状态之间根据输入进行转换。它由当前状态、下一状态、输入和输出组成。在数字电路中，通常用状态寄存器来存储当前状态，用组合逻辑来计算下一状态和输出。常见的有Moore型（输出仅与当前状态有关）和Mealy型（输出与当前状态和当前输入都有关）。</p>
+            </li>
+        </ul>
+    </div>
+</body>
+</html>
