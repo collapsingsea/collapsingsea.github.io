@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homework5_1 问题与解答 (含代码)</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; background-color: #f4f4f4; color: #333; }
+        .container { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; border-bottom: 2px solid #4CAF50; padding-bottom: 10px; }
+        h2 { color: #4CAF50; margin-top: 30px; }
+        h3 { color: #555; margin-top: 20px; }
+        p, ul { margin-bottom: 15px; }
+        ul { list-style-type: disc; margin-left: 20px; }
+        pre { background-color: #2d2d2d; color: #f0f0f0; padding: 15px; border-radius: 5px; overflow-x: auto; font-family: Consolas, Monaco, monospace; font-size: 0.9em; }
+        code.inline-code { background-color: #eee; padding: 2px 4px; border-radius: 4px; font-family: Consolas, Monaco, monospace; }
+        .question-block { margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px dashed #ccc; }
+        .note { background-color: #e7f3fe; border-left: 6px solid #2196F3; padding: 10px; margin-top: 20px; }
+        .code-comment { color: #6a9955; } /* Green for comments */
+        .code-keyword { color: #c586c0; } /* Purple for keywords */
+        .code-literal { color: #9cdcfe; } /* Light blue for literals */
+        .code-variable { color: #dcdcaa; } /* Yellow for variables */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Homework5_1: 密码锁与流水灯 - 问题与解答梳理</h1>
+
+        <div class="note">
+            <p><strong>非常重要：</strong>请务必准备好该设计的状态转换图 (FSM Diagram)。面试时用图结合代码解释会更清晰。同时，请准备好对您自定义的 <code>Press</code> 按键消抖模块的解释。</p>
+        </div>
+
+        <h2>代码及注释 (Homework5_1.v)</h2>
+        <pre>
+<span class="code-keyword">module</span> Homework5_1(clock,K,Seg7,sel,LED);
+    <span class="code-keyword">input</span>          clock;    <span class="code-comment">// 系统时钟输入</span>
+    <span class="code-keyword">input</span>  [4:1]   K;        <span class="code-comment">// 4个按键输入 (K[1]~K[4])</span>
+    <span class="code-keyword">output</span> <span class="code-keyword">reg</span> [5:0] LED;      <span class="code-comment">// 6个LED输出</span>
+    <span class="code-keyword">output</span> <span class="code-keyword">reg</span> [7:0] Seg7;     <span class="code-comment">// 七段数码管段选信号</span>
+    <span class="code-keyword">output</span> <span class="code-keyword">reg</span> [3:0] sel;      <span class="code-comment">// 七段数码管位选信号</span>
+    <span class="code-keyword">wire</span>   [4:1]   DIF;    <span class="code-comment">// 按键消抖后的信号 (DIF[1]~DIF[4])</span>
+    <span class="code-keyword">reg</span>    [2:0]   DIN,N,N1,N2,N3,N4; <span class="code-comment">// DIN: 当前按键值, N: 当前数码管显示数字, N1-N4: 四位数码管分别显示的数字</span>
+    <span class="code-keyword">parameter</span> [3:0] S0=<span class="code-literal">4'b0000</span>,S1=<span class="code-literal">4'b0001</span>,S2=<span class="code-literal">4'b0010</span>,S3=<span class="code-literal">4'b0011</span>,S4=<span class="code-literal">4'b0100</span>,S5=<span class="code-literal">4'b0101</span>,S6=<span class="code-literal">4'b0110</span>,S7=<span class="code-literal">4'b0111</span>,S8=<span class="code-literal">4'b1000</span>,S9=<span class="code-literal">4'b1001</span>,S10=<span class="code-literal">4'b1010</span>; <span class="code-comment">// FSM状态定义</span>
+    <span class="code-keyword">reg</span>    [3:0]   ps,ns;  <span class="code-comment">// ps: 当前状态, ns: 下一状态</span>
+    <span class="code-keyword">reg</span>    [25:0]  Q;      <span class="code-comment">// 用于数码管扫描和分频的计数器</span>
+    <span class="code-keyword">reg</span>    [2:0]   Q1,Q2;  <span class="code-comment">// 用于流水灯不同频率的计数器</span>
+    <span class="code-keyword">reg</span>            pulse,pulse2; <span class="code-comment">// 用于产生流水灯时钟的脉冲信号</span>
+    <span class="code-keyword">wire</span>   [1:0]   scan;   <span class="code-comment">// 数码管扫描位选信号</span>
+    <span class="code-keyword">reg</span>    [21:0]  count;  <span class="code-comment">// 用于1Hz流水灯的分频计数器</span>
+    <span class="code-keyword">reg</span>    [20:0]  count2; <span class="code-comment">// 用于2Hz流水灯的分频计数器</span>
+    <span class="code-keyword">reg</span>    [2:0]   ok;     <span class="code-comment">// 密码输入成功状态标志 (0:初始/错误, 1:第一次成功, 2:第二次成功, 3:多次错误)</span>
+
+
+<span class="code-comment">//Press - 按键消抖模块实例化----------------------------------------------------------------</span>
+Press  P1(clock,K[1],DIF[1]);
+Press  P2(clock,K[2],DIF[2]);
+Press  P3(clock,K[3],DIF[3]);
+Press  P4(clock,K[4],DIF[4]);
+
+<span class="code-comment">// 将按键K的输入转换为数值DIN</span>
+<span class="code-keyword">always</span>@(*)
+<span class="code-keyword">begin</span>
+    <span class="code-keyword">case</span>(K) <span class="code-comment">// K[4] K[3] K[2] K[1] - 假设低有效，按键按下对应位为0</span>
+        <span class="code-literal">4'b1110</span> : DIN=1; <span class="code-comment">// K1按下</span>
+        <span class="code-literal">4'b1101</span> : DIN=2; <span class="code-comment">// K2按下</span>
+        <span class="code-literal">4'b1011</span> : DIN=3; <span class="code-comment">// K3按下</span>
+        <span class="code-literal">4'b0111</span> : DIN=4; <span class="code-comment">// K4按下</span>
+        <span class="code-keyword">default</span> : DIN=0; <span class="code-comment">// 无按键或多键按下 (或未定义的K组合)</span>
+    <span class="code-keyword">endcase</span>
+<span class="code-keyword">end</span>
+
+<span class="code-comment">//FSM(Control) - 有限状态机控制逻辑-----------------------------------------------</span>
+<span class="code-comment">// 状态机状态寄存器：当时钟上升沿且有按键按下(DIF信号有效)时，更新当前状态</span>
+<span class="code-keyword">always</span>@(posedge clock)
+<span class="code-keyword">begin</span>
+    <span class="code-keyword">if</span>(DIF[1]==1 || DIF[2]==1 || DIF[3]==1 || DIF[4]==1) <span class="code-comment">// 任何一个消抖后的按键信号为高电平脉冲</span>
+        ps<=ns; <span class="code-comment">// 将下一状态赋给当前状态</span>
+<span class="code-keyword">end</span>
+
+<span class="code-comment">// 状态机下一状态逻辑和输出逻辑 (组合逻辑)</span>
+<span class="code-comment">// 密码预设为 1 -> 3 -> 4 -> 2</span>
+<span class="code-keyword">always</span>@(*)
+<span class="code-keyword">begin</span>
+    <span class="code-keyword">case</span>(ps) <span class="code-comment">// 根据当前状态 (ps) 决定下一状态 (ns) 和输出 (ok, N1-N4)</span>
+        S0 : <span class="code-keyword">begin</span> <span class="code-comment">// 初始状态 / 密码输入完毕或错误后的重置状态</span>
+             ok=0; <span class="code-comment">// 清除成功标志</span>
+             N1=0;N2=0;N3=0;N4=0; <span class="code-comment">// 数码管不显示或显示特定初始符号</span>
+             <span class="code-keyword">if</span> (DIN==1)  ns=S1;  <span class="code-comment">// 如果按下K1 (密码第一位1正确)</span>
+             <span class="code-keyword">else</span>         ns=S5;  <span class="code-comment">// 否则进入第一次尝试的错误处理流程 (S5)</span>
+             <span class="code-keyword">end</span>
+        S1 : <span class="code-keyword">begin</span> <span class="code-comment">// 密码第一位(1)输入正确</span>
+             ok=0;
+             N1=1;N2=0;N3=0;N4=0; <span class="code-comment">// 数码管显示1---</span>
+             <span class="code-keyword">if</span> (DIN==3)  ns=S2;  <span class="code-comment">// 如果按下K3 (密码第二位3正确)</span>
+             <span class="code-keyword">else</span>         ns=S5;  <span class="code-comment">// 否则进入第一次尝试的错误处理流程 (S5)</span>
+             <span class="code-keyword">end</span>
+        S2 : <span class="code-keyword">begin</span> <span class="code-comment">// 密码前两位(13)输入正确</span>
+             ok=0;
+             N1=1;N2=3;N3=0;N4=0; <span class="code-comment">// 数码管显示13--</span>
+             <span class="code-keyword">if</span> (DIN==4)  ns=S3;  <span class="code-comment">// 如果按下K4 (密码第三位4正确)</span>
+             <span class="code-keyword">else</span>         ns=S5;  <span class="code-comment">// 否则进入第一次尝试的错误处理流程 (S5)</span>
+             <span class="code-keyword">end</span>
+        S3 : <span class="code-keyword">begin</span> <span class="code-comment">// 密码前三位(134)输入正确</span>
+             ok=0;
+             N1=1;N2=3;N3=4;N4=0; <span class="code-comment">// 数码管显示134-</span>
+             <span class="code-keyword">if</span> (DIN==2)  ns=S4;  <span class="code-comment">// 如果按下K2 (密码第四位2正确，密码完全正确)</span>
+             <span class="code-keyword">else</span>         ns=S5;  <span class="code-comment">// 否则进入第一次尝试的错误处理流程 (S5)</span>
+             <span class="code-keyword">end</span>
+        S4 : <span class="code-keyword">begin</span> <span class="code-comment">// 第一次密码输入成功状态 (显示OPEN，流水灯模式1)</span>
+             ok=1; <span class="code-comment">// 设置成功标志为1</span>
+             N1=1;N2=3;N3=4;N4=2; <span class="code-comment">// 数码管显示输入的正确密码1342</span>
+             <span class="code-comment">// 在此状态下，按任意键都会返回初始状态，准备下一次操作</span>
+             <span class="code-keyword">if</span>(DIN==1|DIN==2|DIN==3|DIN==4) ns=S0;
+             <span class="code-keyword">else</span> ns=S4; <span class="code-comment">// 如果没有按键，保持当前状态</span>
+             <span class="code-keyword">end</span>
+        S5 : <span class="code-keyword">begin</span> <span class="code-comment">// 第一次密码输入错误后，进入第二次尝试的初始状态</span>
+             ok=0;
+             N1=0;N2=0;N3=0;N4=0; <span class="code-comment">// 清空数码管</span>
+             <span class="code-keyword">if</span>   (DIN==1) ns=S6;  <span class="code-comment">// 如果按下K1 (第二次尝试密码第一位1正确)</span>
+             <span class="code-keyword">else</span>          ns=S10; <span class="code-comment">// 否则进入多次错误状态 (S10)</span>
+             <span class="code-keyword">end</span>
+        S6 : <span class="code-keyword">begin</span> <span class="code-comment">// 第二次尝试，密码第一位(1)输入正确</span>
+             ok=0;
+             N1=1;N2=0;N3=0;N4=0;
+             <span class="code-keyword">if</span>   (DIN==3) ns=S7;  <span class="code-comment">// 如果按下K3 (第二次尝试密码第二位3正确)</span>
+             <span class="code-keyword">else</span>          ns=S10; <span class="code-comment">// 否则进入多次错误状态 (S10)</span>
+             <span class="code-keyword">end</span>
+        S7 : <span class="code-keyword">begin</span> <span class="code-comment">// 第二次尝试，密码前两位(13)输入正确</span>
+             ok=0;
+             N1=1;N2=3;N3=0;N4=0;
+             <span class="code-keyword">if</span>   (DIN==4) ns=S8;  <span class="code-comment">// 如果按下K4 (第二次尝试密码第三位4正确)</span>
+             <span class="code-keyword">else</span>          ns=S10; <span class="code-comment">// 否则进入多次错误状态 (S10)</span>
+             <span class="code-keyword">end</span>
+        S8 : <span class="code-keyword">begin</span> <span class="code-comment">// 第二次尝试，密码前三位(134)输入正确</span>
+             ok=0;
+             N1=1;N2=3;N3=4;N4=0;
+             <span class="code-keyword">if</span>  (DIN==2) ns=S9;  <span class="code-comment">// 如果按下K2 (第二次尝试密码完全正确)</span>
+             <span class="code-keyword">else</span>         ns=S10; <span class="code-comment">// 否则进入多次错误状态 (S10)</span>
+             <span class="code-keyword">end</span>
+        S9 : <span class="code-keyword">begin</span> <span class="code-comment">// 第二次密码输入成功状态 (显示OPEN，流水灯模式2)</span>
+             ok=2; <span class="code-comment">// 设置成功标志为2</span>
+             N1=1;N2=3;N3=4;N4=2; <span class="code-comment">// 数码管显示输入的正确密码1342</span>
+             <span class="code-comment">// 在此状态下，按任意键都会返回初始状态</span>
+             <span class="code-keyword">if</span>(DIN==1|DIN==2|DIN==3|DIN==4) ns=S0;
+             <span class="code-keyword">else</span> ns=S9;
+             <span class="code-keyword">end</span>
+        S10: <span class="code-keyword">begin</span> <span class="code-comment">// 多次密码输入错误状态 (显示ERROR，流水灯模式3 - 警示)</span>
+             ok=3; <span class="code-comment">// 设置成功标志为3</span>
+             N1=0;N2=0;N3=0;N4=0; <span class="code-comment">// 清空数码管或显示错误代码</span>
+             <span class="code-comment">// 在此状态下，按任意键都会返回初始状态</span>
+             <span class="code-keyword">if</span>(DIN==1|DIN==2|DIN==3|DIN==4) ns=S0;
+             <span class="code-keyword">else</span> ns=S10;
+             <span class="code-keyword">end</span>
+    <span class="code-keyword">endcase</span>
+<span class="code-keyword">end</span>
+
+<span class="code-comment">//Seg7 - 七段数码管显示控制-------------------------------------------</span>
+<span class="code-comment">// 26位自由运行计数器Q，用于产生数码管扫描时钟</span>
+<span class="code-keyword">always</span>@(posedge clock)
+<span class="code-keyword">begin</span>
+    Q<=Q+1;
+<span class="code-keyword">end</span>
+
+<span class="code-comment">// 提取Q的高两位作为2位的扫描信号scan，用于4位数码管的位选</span>
+<span class="code-comment">// 扫描频率计算: 50MHz (clock) / 2^(18) / 4 (位) ≈ 47.68Hz</span>
+<span class="code-keyword">assign</span> scan=Q[19:18];
+
+<span class="code-comment">// 数码管位选逻辑：根据scan的值选择点亮哪一位数码管 (低电平有效)</span>
+<span class="code-keyword">always</span>@(*)
+<span class="code-keyword">begin</span>
+ <span class="code-keyword">case</span>(scan)
+    <span class="code-literal">2'b00</span>:sel=<span class="code-literal">4'b1110</span>; <span class="code-comment">// 选择第1位</span>
+    <span class="code-literal">2'b01</span>:sel=<span class="code-literal">4'b1101</span>; <span class="code-comment">// 选择第2位</span>
+    <span class="code-literal">2'b10</span>:sel=<span class="code-literal">4'b1011</span>; <span class="code-comment">// 选择第3位</span>
+    <span class="code-literal">2'b11</span>:sel=<span class="code-literal">4'b0111</span>; <span class="code-comment">// 选择第4位</span>
+  <span class="code-keyword">endcase</span>
+<span class="code-keyword">end</span>
+
+<span class="code-comment">// 数据选择：根据scan的值，将对应的N1-N4数据显示在当前选中的数码管上</span>
+<span class="code-keyword">always</span>@(*)
+<span class="code-keyword">begin</span>
+    <span class="code-keyword">case</span>(scan)
+    <span class="code-literal">2'b00</span>:N=N1; <span class="code-comment">// 第1位显示N1</span>
+    <span class="code-literal">2'b01</span>:N=N2; <span class="code-comment">// 第2位显示N2</span>
+    <span class="code-literal">2'b10</span>:N=N3; <span class="code-comment">// 第3位显示N3</span>
+    <span class="code-literal">2'b11</span>:N=N4; <span class="code-comment">// 第4位显示N4</span>
+    <span class="code-keyword">endcase</span>
+<span class="code-keyword">end</span>
+
+<span class="code-comment">// 数码管段选译码逻辑 (共阳极数码管，0亮1灭)</span>
+<span class="code-keyword">always</span>@(*)
+<span class="code-keyword">begin</span>
+    <span class="code-keyword">case</span>(N) <span class="code-comment">// 根据要显示的数字N，输出对应的七段码</span>
+     1       : Seg7 = <span class="code-literal">8'b11111001</span>; <span class="code-comment">// 显示 "1"</span>
+     2       : Seg7 = <span class="code-literal">8'b10100100</span>; <span class="code-comment">// 显示 "2"</span>
+     3       : Seg7 = <span class="code-literal">8'b10110000</span>; <span class="code-comment">// 显示 "3"</span>
+     4       : Seg7 = <span class="code-literal">8'b10011001</span>; <span class="code-comment">// 显示 "4"</span>
+     <span class="code-keyword">default</span> : Seg7 = <span class="code-literal">8'b11111111</span>; <span class="code-comment">// 默认不显示 (全灭) 或显示 "0" (如果N=0时)</span>
+    <span class="code-keyword">endcase</span>
+<span class="code-keyword">end</span>
+
+<span class="code-comment">//LED - 流水灯控制--------------------------------------------</span>
+<span class="code-comment">// 产生1Hz的脉冲信号 (pulse) 用于较慢的流水灯</span>
+<span class="code-keyword">always</span>@(posedge clock)
+<span class="code-keyword">begin</span>
+    count<=count+1;
+    <span class="code-keyword">if</span>(count==3125000) <span class="code-comment">// 50MHz / (2 * 3125000) = 8Hz (pulse信号的频率)</span>
+    <span class="code-keyword">begin</span>
+        pulse<=~pulse; <span class="code-comment">// pulse信号每当count计满时翻转</span>
+        count<=0;     <span class="code-comment">// 计数器清零 (更正：清零以保证周期准确性)</span>
+    <span class="code-keyword">end</span>
+<span class="code-keyword">end</span>
+<span class="code-comment">// Q1计数器，由pulse的上升沿触发，产生1Hz的流水灯基准</span>
+<span class="code-comment">// Q1是一个3位计数器，从0计数到7，每个pulse上升沿加1。</span>
+<span class="code-comment">// Q1完成一个周期的频率 = pulse频率 / 2^3 = 8Hz / 8 = 1Hz.</span>
+<span class="code-keyword">always</span>@(posedge pulse)
+<span class="code-keyword">begin</span>
+  Q1<=Q1+1;
+<span class="code-keyword">end</span>
+
+<span class="code-comment">// 产生2Hz的脉冲信号 (pulse2) 用于较快的流水灯</span>
+<span class="code-keyword">always</span>@(posedge clock)
+<span class="code-keyword">begin</span>
+     count2<=count2+1;
+    <span class="code-keyword">if</span> (count2==1562500) <span class="code-comment">// 50MHz / (2 * 1562500) = 16Hz (pulse2信号的频率)</span>
+    <span class_comment">begin</span>
+       pulse2<=~pulse2; <span class="code-comment_comment">// pulse2信号翻转</span>
+       count2<=0;      <span class="code-comment_comment">// 计数器清零</span>
+    <span class="code-keyword_keyword">end</span>
+<span class="code-keyword_keyword">end</span>
+
+<span class="code-comment_comment">// Q2计数器，由pulse2的上升沿触发，产生2Hz的流水灯基准</span>
+<span class="code-comment_comment">// Q2完成一个周期的频率 = pulse2频率 / 2^3 = 16Hz / 8 = 2Hz.</span>
+<span class="code-keyword_keyword">always</span>@(posedge pulse2)
+<span class="code-keyword_keyword">begin</span>
+  Q2<=Q2+1;
+<span class="code-keyword_keyword">end</span>
+
+<span class="code-comment_comment">// 根据密码成功状态 (ok) 控制LED流水灯显示</span>
+<span class="code-keyword_keyword">always</span>@(*)
+<span class="code-keyword_keyword">begin</span>
+<span class="code-keyword_keyword">if</span> (ok==0)LED=<span class="code-literal_literal">6'b111111</span>; <span class="code-comment_comment">// ok=0: 初始状态或密码输入错误，LED全灭</span>
+<span class="code-keyword_keyword">else</span> <span class="code-keyword_keyword">if</span>(ok==1) <span class="code-comment_comment">// ok=1: 第一次密码正确，使用Q2 (2Hz基准) 控制流水灯，速度较快</span>
+<span class="code-keyword_keyword">case</span>(Q2)
+  <span class="code-literal_literal">3'b000</span>:LED=<span class="code-literal_literal">6'b111110</span>; <span class="code-comment_comment">// 流水灯模式1 (例如：从左到右)</span>
+  <span class="code-literal_literal">3'b001</span>:LED=<span class="code-literal_literal">6'b111101</span>;
+  <span class="code-literal_literal">3'b010</span>:LED=<span class="code-literal_literal">6'b111011</span>;
+  <span class="code-literal_literal">3'b011</span>:LED=<span class="code-literal_literal">6'b110111</span>;
+  <span class="code-literal_literal">3'b100</span>:LED=<span class="code-literal_literal">6'b101111</span>;
+  <span class="code-literal_literal">3'b101</span>:LED=<span class="code-literal_literal">6'b011111</span>;
+  <span class="code-literal_literal">3'b110</span>:LED=<span class="code-literal_literal">6'b111111</span>; <span class_comment">// 灭一下，或者其他模式</span>
+  <span class="code-literal_literal">3'b111</span>:LED=<span class="code-literal_literal">6'b111111</span>;
+<span class="code-keyword_keyword">endcase</span>
+<span class="code-keyword_keyword">else</span> <span class="code-keyword_keyword">if</span>(ok==2) <span class="code-comment_comment_comment">// ok=2: 第二次密码正确，使用Q1 (1Hz基准) 控制流水灯，速度较慢</span>
+<span class="code-keyword_keyword_keyword">case</span>(Q1)
+  <span class="code-literal_literal_literal">3'b000</span>:LED=<span class="code-literal_literal_literal">6'b111110</span>; <span class="code-comment_comment_comment_comment">// 流水灯模式2 (可以和模式1一样，但速度不同)</span>
+  <span class="code-literal_literal_literal">3'b001</span>:LED=<span class="code-literal_literal_literal">6'b111101</span>;
+  <span class="code-literal_literal_literal">3'b010</span>:LED=<span class="code-literal_literal_literal">6'b111011</span>;
+  <span class="code-literal_literal_literal">3'b011</span>:LED=<span class="code-literal_literal_literal">6'b110111</span>;
+  <span class="code-literal_literal_literal">3'b100</span>:LED=<span class="code-literal_literal_literal">6'b101111</span>;
+  <span class="code-literal_literal_literal">3'b101</span>:LED=<span class="code-literal_literal_literal">6'b011111</span>;
+  <span class="code-literal_literal_literal">3'b110</span>:LED=<span class="code-literal_literal_literal">6'b111111</span>;
+  <span class="code-literal_literal_literal">3'b111</span>:LED=<span class="code-literal_literal_literal">6'b111111</span>;
+<span class="code-keyword_keyword_keyword">endcase</span>
+<span class="code-keyword_keyword_keyword">else</span> <span class="code-keyword_keyword_keyword">if</span>(ok==3) <span class="code-comment_comment_comment_comment_comment">// ok=3: 多次错误，进入警示状态，使用Q2控制LED闪烁 (例如：快闪或全亮)</span>
+<span class="code-keyword_keyword_keyword_keyword">case</span>(Q2) <span class="code-comment_comment_comment_comment_comment_comment">// 你的代码这里是交替亮灭一半LED</span>
+  <span class="code-literal_literal_literal_literal">3'b000</span>:LED=<span class="code-literal_literal_literal_literal">6'b111000</span>; <span class_comment">// 前三灯亮</span>
+  <span class="code-literal_literal_literal_literal">3'b001</span>:LED=<span class="code-literal_literal_literal_literal">6'b111000</span>;
+  <span class="code-literal_literal_literal_literal">3'b010</span>:LED=<span class="code-literal_literal_literal_literal">6'b111000</span>;
+  <span class="code-literal_literal_literal_literal">3'b011</span>:LED=<span class="code-literal_literal_literal_literal">6'b111000</span>;
+  <span class="code-literal_literal_literal_literal">3'b100</span>:LED=<span class="code-literal_literal_literal_literal">6'b000111</span>; <span class_comment">// 后三灯亮</span>
+  <span class="code-literal_literal_literal_literal">3'b101</span>:LED=<span class="code-literal_literal_literal_literal">6'b000111</span>;
+  <span class="code-literal_literal_literal_literal">3'b110</span>:LED=<span class="code-literal_literal_literal_literal">6'b000111</span>;
+  <span class="code-literal_literal_literal_literal">3'b111</span>:LED=<span class="code-literal_literal_literal_literal">6'b000111</span>;
+<span class="code-keyword_keyword_keyword_keyword">endcase</span>
+<span class="code-keyword_keyword_keyword_keyword">end</span>
+<span class="code-keyword_keyword_keyword_keyword">endmodule</span>
+        </pre>
+
+        <h2>一、老师在模拟面试中提出的问题</h2>
+        <p>（同上一个版本，这里不再重复）</p>
+
+        <h2>二、其他可能问到的简单问题</h2>
+        <div class="question-block">
+            <h3>1. <code>parameter</code> 在Verilog中是用来做什么的？</h3>
+            <p><strong>解答思路：</strong> 用来定义常量。在这个代码中，我用它来给FSM的各个状态赋予一个易于理解的名称和对应的二进制值，这样可以提高代码的可读性和可维护性。如果以后需要修改状态的编码，只需要修改parameter的定义即可。</p>
+        </div>
+        <div class="question-block">
+            <h3>2. <code>wire</code> 和 <code>reg</code> 有什么区别？你的代码中哪些是<code>wire</code>，哪些是<code>reg</code>？</h3>
+            <p><strong>解答思路：</strong></p>
+            <ul>
+                <li><code>wire</code>：表示物理连线，它本身不存储值，其值由驱动它的信号决定。通常用于组合逻辑的输出或模块间的连接。</li>
+                <li><code>reg</code>：表示寄存器类型，它可以存储值，直到下一次被赋值。通常用在时序逻辑块（如 <code>always@(posedge clock)</code>）中被赋值的变量，或者组合逻辑块（<code>always@(*)</code>）中需要保持状态的变量。</li>
+                <li>**代码中：**
+                    <ul>
+                        <li><code>DIF</code> 和 <code>scan</code> 是 <code>wire</code> 类型。<code>DIF</code>是按键消抖模块的输出，<code>scan</code>是由计数器<code>Q</code>直接组合逻辑赋值产生的。</li>
+                        <li><code>LED</code>, <code>Seg7</code>, <code>sel</code>, <code>DIN</code>, <code>N</code>, <code>N1-N4</code>, <code>ps</code>, <code>ns</code>, <code>Q</code>, <code>Q1</code>, <code>Q2</code>, <code>pulse</code>, <code>pulse2</code>, <code>count</code>, <code>count2</code>, <code>ok</code> 都是 <code>reg</code> 类型。它们的值在<code>always</code>块中被赋值并需要保持。</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <div class="question-block">
+            <h3>3. <code>always@(*)</code> 和 <code>always@(posedge clock)</code> 有什么区别？</h3>
+            <p><strong>解答思路：</strong></p>
+            <ul>
+                <li><code>always@(*)</code>：描述组合逻辑。当括号内敏感列表中的任何信号发生变化时，这个always块内的语句就会被执行（重新计算）。<code>*</code> 表示敏感列表包含块内所有读取的信号。</li>
+                <li><code>always@(posedge clock)</code>：描述时序逻辑。只有在<code>clock</code>信号的上升沿到来时，这个always块内的语句才会被执行。通常用于实现寄存器、计数器等需要时钟同步的电路。</li>
+            </ul>
+        </div>
+         <div class="question-block">
+            <h3>4. 你的数码管位选信号<code>sel</code>是如何产生的？为什么这样设计？</h3>
+            <p><strong>解答思路：</strong> (指着位选逻辑) <code>sel</code>信号是根据两位扫描信号<code>scan</code>的值来确定的。<code>scan</code>的值从00到11循环变化，对应选中第1到第4个数码管。这种动态扫描的方式可以用较少的I/O口驱动多个数码管，利用人眼的视觉暂留效应，看起来所有数码管是同时点亮的。</p>
+        </div>
+
+        <h2>三、其他可能问到的进阶问题</h2>
+        <div class="question-block">
+            <h3>1. 你的FSM是Mealy型还是Moore型？为什么？</h3>
+            <p><strong>解答思路：</strong></p>
+            <ul>
+                <li>**判断依据：** Moore型状态机的输出仅取决于当前状态；Mealy型状态机的输出不仅取决于当前状态，还取决于当前的输入。</li>
+                <li>**分析你的代码：**
+                    <ul>
+                        <li>FSM的输出包括 `ok`, `N1`, `N2`, `N3`, `N4`。这些输出是在 `always@(*)` 块中，根据 `ps` (当前状态) 和 `DIN` (当前输入) 来决定的（虽然`ok`和`N1-N4`在case的每个分支里看起来只依赖`ps`，但`ns`的确定是依赖`DIN`的，而`ps`的更新依赖`ns`）。更准确地说，如果严格看组合逻辑输出部分，`N1`-`N4` 和 `ok` 的赋值是在 `case(ps)` 内部，似乎只依赖于当前状态 `ps`。而下一状态 `ns` 的确定则依赖于 `ps` 和 `DIN`。</li>
+                        <li>如果 `ok` 和 `N1-N4` 这些直接影响最终输出（LED和Seg7）的信号，其赋值**仅**在 `case(ps)` 的每个分支确定，并且这些分支的条件**不直接**包含 `DIN`，那么它偏向Moore型（输出仅依赖状态）。</li>
+                        <li>但如果 `ns` 的计算（依赖 `ps` 和 `DIN`）会间接且快速地影响到需要立即反应的输出（不经过下一个时钟周期），则有Mealy特性。</li>
+                        <li>**你的代码中，`ok`, `N1-N4` 的赋值确实是在 `case(ps)` 的不同分支中，这些分支本身不直接看 `DIN` 来改变这些输出，而是 `DIN` 决定了 `ns`，再通过时钟更新 `ps`，然后 `ps` 决定这些输出。所以，如果把 `ok` 和 `N1-N4` 看作是“状态的输出”，那么它更接近Moore型。**</li>
+                        <li>**更严谨的回答：** 我的状态机中，主要的输出信号如 `ok` 和驱动数码管的 `N1` 到 `N4` 是在 `always@(*)` 块中根据当前状态 `ps` 来决定的。虽然下一状态 `ns` 的计算依赖于当前输入 `DIN`，但这些直接的输出信号是与当前状态绑定的。因此，这个FSM主要表现为Moore型特征。</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <div class="question-block">
+            <h3>2. 如果密码输入错误次数过多（例如进入S10状态），系统是如何提示用户的？是否有锁定机制？</h3>
+            <p><strong>解答思路：</strong></p>
+            <ul>
+                <li>当进入S10状态时，`ok` 标志位被设为3。根据LED的控制逻辑，当`ok=3`时，流水灯会进入一种特定的警示闪烁模式（例如，您代码中是让Q2控制LED一半亮一半灭）。</li>
+                <li>当前代码没有实现严格的“锁定”机制（例如，在一段时间内禁止再输入）。在S10状态下，如果用户按任意键，系统会返回到S0状态，允许用户重新开始输入。如果需要锁定机制，可以考虑在S10状态增加一个计数器，在计数器计时未结束前，不响应按键或不转换到S0。</li>
+            </ul>
+        </div>
+        <div class="question-block">
+            <h3>3. 你的分频逻辑（产生pulse和pulse2）是奇数分频还是偶数分频？它是如何保证50%占空比的？</h3>
+            <p><strong>解答思路：</strong></p>
+            <ul>
+                <li>我的分频逻辑都是通过计数器计数到一个特定值N，然后翻转脉冲信号，并将计数器清零。这种方式产生的是**偶数分频**，因为一个完整的脉冲周期（从高到低再到高）需要计数器完成两次从0到N的计数（或者说，`pulse`信号翻转两次）。</li>
+                <li>例如，对于`pulse`，计数到3125000时翻转。一个`pulse`周期是 `2 * 3125000` 个系统时钟周期。由于是在计数值的一半时翻转，所以理论上可以产生接近50%占空比的脉冲。</li>
+                <li>要严格50%占空比，确保翻转点在周期的中间。我这里是在 `count == 3125000` 时翻转，然后 `count <= 0`。如果 `count` 从0开始计数到 `M-1`，那么在 `count == M/2 - 1` 时改变电平，在 `count == M - 1` 时再次改变并清零，可以得到比较理想的占空比。我的实现方式是当 `count` 等于最大计数值时翻转，这也能产生周期性的脉冲，占空比也是50%。</li>
+            </ul>
+        </div>
+        <div class="question-block">
+            <h3>4. 如果我想增加密码的长度，比如增加到6位，代码需要做哪些主要的修改？</h3>
+            <p.<strong>解答思路：</strong></p>
+            <ul>
+                <li><strong>状态数量：</strong>需要增加更多的状态来表示密码输入的不同阶段。例如，S0-S3可能不够，需要S0-S5来表示前五位正确，S6表示全部正确。同样，错误处理的状态也可能需要相应调整。<code>ps</code>和<code>ns</code>的位宽可能需要增加。</li>
+                <li><strong>FSM逻辑：</strong><code>always@(*) case(ps)</code> 块中的状态转换逻辑需要扩展，增加对新状态的处理和对新密码位的判断。</li>
+                <li><strong>数码管显示：</strong>如果密码长度超过4位，当前的4位数码管可能不够显示完整的密码输入过程。可能需要滚动显示，或者只显示最后几位。<code>N1-N4</code>的定义和使用方式可能需要改变。如果还是用4位显示，可能只显示部分密码。</li>
+                <li><strong>参数定义：</strong>状态参数的定义需要增加。</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
