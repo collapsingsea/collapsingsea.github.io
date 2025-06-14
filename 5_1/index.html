@@ -2,169 +2,327 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>Homework 5-1: 密码锁设计解析</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homework 5-1: 密码锁设计深度解析 (极致详细版)</title>
     <style>
         body {
-            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             line-height: 1.8;
-            margin: 20px;
-            background-color: #f4f7f6;
-            color: #333;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            color: #212529;
         }
         .container {
             max-width: 900px;
             margin: auto;
-            background: #fff;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+            border: 1px solid #dee2e6;
         }
         h1, h2, h3 {
             color: #0056b3;
-            border-bottom: 2px solid #e0e0e0;
+            border-bottom: 2px solid #0056b3;
             padding-bottom: 10px;
         }
-        h1 { font-size: 2em; }
-        h2 { font-size: 1.5em; margin-top: 40px;}
-        h3 { font-size: 1.2em; border-bottom: 1px dashed #ccc; }
+        h1 { font-size: 2.2em; text-align: center; border: none; }
+        h2 { font-size: 1.6em; margin-top: 40px; }
+        h3 { font-size: 1.3em; border-bottom: 1px solid #ced4da; color: #007bff; }
         pre {
-            background-color: #282c34;
-            color: #abb2bf;
-            padding: 15px;
-            border-radius: 5px;
+            background-color: #2b2b2b;
+            color: #a9b7c6;
+            padding: 20px;
+            border-radius: 8px;
             overflow-x: auto;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 14px;
-            white-space: pre-wrap; /* 自动换行 */
-            word-wrap: break-word; /* 强制换行 */
-        }
-        code {
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Fira Code', 'Consolas', 'Courier New', monospace;
+            font-size: 15px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
         .comment {
-            color: #5c6370;
-            font-style: normal; /* 注释字体改为非斜体 */
+            color: #808080;
+            font-style: normal;
         }
-        .keyword {
-            color: #c678dd;
-        }
-        .number {
-            color: #d19a66;
-        }
-        .string {
-            color: #98c379;
-        }
+        .keyword { color: #cc7832; }
+        .number { color: #6897bb; }
+        .string { color: #6a8759; }
         .qa-block {
-            background-color: #e9f5ff;
-            border-left: 5px solid #007bff;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 5px;
+            background-color: #e9f7ff;
+            border-left: 6px solid #17a2b8;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 8px;
         }
         .question {
             font-weight: bold;
-            color: #0056b3;
+            color: #0c5460;
+            font-size: 1.1em;
         }
         .answer {
-            margin-top: 5px;
+            margin-top: 8px;
+            padding-left: 15px;
+            border-left: 2px solid #b8daff;
         }
         li {
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
         .summary-block {
-            background-color: #e2e8f0;
-            padding: 10px;
-            margin-top: 10px;
-            border-radius: 4px;
-            font-size: 0.9em;
-            color: #4a5568;
+            background-color: #f1f3f5;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 6px;
+            font-size: 0.95em;
+            color: #495057;
+            border: 1px solid #ced4da;
+        }
+        .project-intro {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border: 1px solid #ffeeba;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Homework 5-1: 密码锁设计全解析</h1>
-        <p>本项目实现一个基于FPGA的密码锁。其核心功能是：通过有限状态机（FSM）判断用户输入的密码（1-3-4-2）是否正确。第一次输入正确，LED灯以2Hz频率闪烁；第二次输入正确，LED以1Hz频率闪烁；输入错误则有相应的提示。同时，数码管会实时显示用户输入的数字。</p>
+        <h1>Homework 5-1: 密码锁设计深度解析 (极致详细版)</h1>
+        <div class="project-intro">
+            <p><strong>项目简介：</strong>本项目旨在设计并实现一个基于FPGA的数字密码锁。系统能识别四位密码“1-3-4-2”。用户有两次输入机会。第一次输入正确，LED灯以较快频率（2Hz）闪烁；如果第一次失败，进入第二次尝试，若第二次成功，LED灯以较慢频率（1Hz）闪烁。若两次均失败，LED灯将进入特定的错误提示模式。在整个过程中，七段数码管会实时显示用户当前输入的密码数字。</p>
+        </div>
 
         <h2>代码及逐行注释</h2>
-        <pre><code><span class="keyword">module</span> <span class="string">Homework5_1</span>(<span class="string">clock</span>, <span class="string">K</span>, <span class="string">Seg7</span>, <span class="string">sel</span>, <span class="string">LED</span>);
-    <span class="comment">// 模块声明，定义了输入输出端口</span>
-    <span class="keyword">input</span>  		        <span class="string">clock</span>;      <span class="comment">// 输入：50MHz主时钟信号</span>
-    <span class="keyword">input</span>  		[<span class="number">3</span>:<span class="number">1</span>]<span class="string">K</span>;          <span class="comment">// 输入：4个按键的输入信号 (K1, K2, K3, K4)</span>
-    <span class="keyword">output</span> <span class="keyword">reg</span>  [<span class="number">5</span>:<span class="number">0</span>]<span class="string">LED</span>;        <span class="comment">// 输出：6个LED灯的控制信号</span>
-    <span class="keyword">output</span> <span class="keyword">reg</span>  [<span class="number">7</span>:<span class="number">0</span>]<span class="string">Seg7</span>;       <span class="comment">// 输出：七段数码管的段选信号</span>
-    <span class="keyword">output</span> <span class="keyword">reg</span>    [<span class="number">3</span>:<span class="number">0</span>]<span class="string">sel</span>;        <span class="comment">// 输出：四位七段数码管的位选信号</span>
+        <pre><code><span class="keyword">module</span> <span class="string">Homework5_1</span>(<span class="string">clock</span>, <span class="string">K</span>, <span class="string">Seg7</span>, <span class="string">sel</span>, <span class="string">LED</span>); <span class="comment">// 模块定义，模块名为Homework5_1，并声明端口</span>
+    <span class="keyword">input</span>  		        <span class="string">clock</span>;      <span class="comment">// 输入端口：50MHz主时钟信号</span>
+    <span class="keyword">input</span>  		[<span class="number">4</span>:<span class="number">1</span>]<span class="string">K</span>;          <span class="comment">// 输入端口：4位按键信号，低电平有效</span>
+    <span class="keyword">output</span> <span class="keyword">reg</span>  [<span class="number">5</span>:<span class="number">0</span>]<span class="string">LED</span>;        <span class="comment">// 输出端口：6个LED，reg类型表示它在always块中被赋值</span>
+    <span class="keyword">output</span> <span class="keyword">reg</span>  [<span class="number">7</span>:<span class="number">0</span>]<span class="string">Seg7</span>;       <span class="comment">// 输出端口：七段数码管的段选信号 (a-g, dp)</span>
+    <span class="keyword">output</span>  <span class="keyword">reg</span>    [<span class="number">3</span>:<span class="number">0</span>]<span class="string">sel</span>;        <span class="comment">// 输出端口：四位七段数码管的位选信号</span>
+    <span class="keyword">wire</span> 			[<span class="number">4</span>:<span class="number">1</span>]<span class="string">DIF</span>;        <span class="comment">// 内部连线：存储按键消抖后的单脉冲信号</span>
+    <span class="keyword">reg</span>			[<span class="number">2</span>:<span class="number">0</span>]<span class="string">DIN</span>, <span class="string">N</span>, <span class="string">N1</span>, <span class="string">N2</span>, <span class="string">N3</span>, <span class="string">N4</span>;	<span class="comment">// 寄存器：DIN-解码按键值, N-当前显示数字, N1-N4-存储输入的四位密码</span>
+    <span class="keyword">parameter</span>	[<span class="number">3</span>:<span class="number">0</span>]<span class="string">S0</span>=<span class="number">4'b0000</span>, <span class="string">S1</span>=<span class="number">4'b0001</span>, <span class="string">S2</span>=<span class="number">4'b0010</span>, <span class="string">S3</span>=<span class="number">4'b0011</span>, <span class="string">S4</span>=<span class="number">4'b0100</span>, <span class="string">S5</span>=<span class="number">4'b0101</span>, <span class="string">S6</span>=<span class="number">4'b0110</span>, <span class="string">S7</span>=<span class="number">4'b0111</span>, <span class="string">S8</span>=<span class="number">4'b1000</span>, <span class="string">S9</span>=<span class="number">4'b1001</span>, <span class="string">S10</span>=<span class="number">4'b1010</span>; <span class="comment">// 使用parameter定义FSM状态，提高代码可读性</span>
+    <span class="keyword">reg</span> 			[<span class="number">3</span>:<span class="number">0</span>]<span class="string">ps</span>, <span class="string">ns</span>;       <span class="comment">// 寄存器：ps存储当前状态，ns存储下一状态</span>
+    <span class="keyword">reg</span>         [<span class="number">25</span>:<span class="number">0</span>]<span class="string">Q</span>;          <span class="comment">// 26位计数器，用于生成数码管的动态扫描时钟</span>
+    <span class="keyword">reg</span>         [<span class="number">2</span>:<span class="number">0</span>]<span class="string">Q1</span>, <span class="string">Q2</span>;       <span class="comment">// 3位计数器，用于控制LED流水灯的不同模式</span>
+    <span class="keyword">reg</span>         <span class="string">pulse</span>, <span class="string">pulse2</span>;   <span class="comment">// 单比特寄存器，存储分频后生成的1Hz和2Hz脉冲</span>
+    <span class="keyword">wire</span>        [<span class="number">1</span>:<span class="number">0</span>]<span class="string">scan</span>;       <span class="comment">// 内部连线：从分频计数器Q中提取出的2位扫描信号</span>
+    <span class="keyword">reg</span>         [<span class="number">21</span>:<span class="number">0</span>]<span class="string">count</span>;      <span class="comment">// 22位计数器，用于从50MHz分频产生1Hz脉冲</span>
+    <span class="keyword">reg</span>         [<span class="number">20</span>:<span class="number">0</span>]<span class="string">count2</span>;     <span class="comment">// 21位计数器，用于从50MHz分频产生2Hz脉冲</span>
+    <span class="keyword">reg</span>         [<span class="number">2</span>:<span class="number">0</span>]<span class="string">ok</span>;         <span class="comment">// 3位状态标志寄存器，用于控制LED显示模式</span>
+<div class="summary-block"><b>总结：</b>此部分为模块的声明和内部信号定义。<code>input</code>和<code>output</code>定义了模块与外部的接口。内部使用<code>wire</code>连接不需要存储的信号，<code>reg</code>定义需要存储状态的信号，如FSM的状态（ps, ns）、计数器（Q, count）和标志位（ok）。<code>parameter</code>为状态机的各个状态命名，增加了代码的可读性。</div>
 
-    <span class="comment">// 内部信号定义</span>
-    <span class="keyword">wire</span> 			[<span class="number">4</span>:<span class="number">1</span>]<span class="string">DIF</span>;        <span class="comment">// wire类型，用于连接按键消抖模块的输出</span>
-    <span class="keyword">reg</span>			[<span class="number">2</span>:<span class="number">0</span>]<span class="string">DIN</span>, <span class="string">N</span>, <span class="string">N1</span>, <span class="string">N2</span>, <span class="string">N3</span>, <span class="string">N4</span>;	<span class="comment">// reg类型，DIN用于存储解码后的按键值，N1-N4用于存储待显示的数字</span>
-    <span class="keyword">parameter</span>	[<span class="number">3</span>:<span class="number">0</span>]<span class="string">S0</span>=<span class="number">4'b0000</span>, <span class="string">S1</span>=<span class="number">4'b0001</span>, <span class="string">S2</span>=<span class="number">4'b0010</span>, <span class="string">S3</span>=<span class="number">4'b0011</span>, <span class="string">S4</span>=<span class="number">4'b0100</span>, <span class="string">S5</span>=<span class="number">4'b0101</span>, <span class="string">S6</span>=<span class="number">4'b0110</span>, <span class="string">S7</span>=<span class="number">4'b0111</span>, <span class="string">S8</span>=<span class="number">4'b1000</span>, <span class="string">S9</span>=<span class="number">4'b1001</span>, <span class="string">S10</span>=<span class="number">4'b1010</span>; <span class="comment">// 定义FSM的状态参数</span>
-    <span class="keyword">reg</span> 			[<span class="number">3</span>:<span class="number">0</span>]<span class="string">ps</span>, <span class="string">ns</span>;       <span class="comment">// reg类型，ps: present state (当前状态), ns: next state (下一状态)</span>
-    <span class="keyword">reg</span>         [<span class="number">25</span>:<span class="number">0</span>]<span class="string">Q</span>;          <span class="comment">// reg类型，用于数码管扫描频率的分频计数器</span>
-    <span class="keyword">reg</span>         [<span class="number">2</span>:<span class="number">0</span>]<span class="string">Q1</span>, <span class="string">Q2</span>;       <span class="comment">// reg类型，用于控制LED流水灯模式的计数器</span>
-    <span class="keyword">reg</span>         <span class="string">pulse</span>, <span class="string">pulse2</span>;   <span class="comment">// reg类型，存储分频后产生的1Hz和2Hz脉冲信号</span>
-    <span class="keyword">wire</span>        [<span class="number">1</span>:<span class="number">0</span>]<span class="string">scan</span>;       <span class="comment">// wire类型，数码管的扫描选择信号</span>
-    <span class="keyword">reg</span>         [<span class="number">21</span>:<span class="number">0</span>]<span class="string">count</span>;      <span class="comment">// reg类型，用于1Hz脉冲信号的分频计数器</span>
-    <span class="keyword">reg</span>         [<span class="number">20</span>:<span class="number">0</span>]<span class="string">count2</span>;     <span class="comment">// reg类型，用于2Hz脉冲信号的分频计数器</span>
-    <span class="keyword">reg</span>         [<span class="number">2</span>:<span class="number">0</span>]<span class="string">ok</span>;         <span class="comment">// reg类型，状态标志位。0:初始/错误, 1:第一次成功, 2:第二次成功, 3:彻底失败</span>
-<div class="summary-block"><b>总结：</b>此部分为模块的声明和内部信号定义。<code>input</code>和<code>output</code>定义了模块与外部的接口。内部使用<code>wire</code>连接不需要存储的信号，<code>reg</code>定义需要存储状态的信号，如FSM的状态（ps, ns）、计数器（Q, count）和标志位（ok）。<code>parameter</code>为状态机定义了易于理解的符号名称。</div>
-    <span class="comment">// --- 按键消抖模块实例化 ---</span>
-    <span class="keyword">Press</span>  <span class="string">P1</span>(<span class="string">clock</span>, <span class="string">K</span>[<span class="number">1</span>], <span class="string">DIF</span>[<span class="number">1</span>]);		
-    <span class="keyword">Press</span>  <span class="string">P2</span>(<span class="string">clock</span>, <span class="string">K</span>[<span class="number">2</span>], <span class="string">DIF</span>[<span class="number">2</span>]);
-    <span class="keyword">Press</span>  <span class="string">P3</span>(<span class="string">clock</span>, <span class="string">K</span>[<span class="number">3</span>], <span class="string">DIF</span>[<span class="number">3</span>]);
-    <span class="keyword">Press</span>  <span class="string">P4</span>(<span class="string">clock</span>, <span class="string">K</span>[<span class="number">4</span>], <span class="string">DIF</span>[<span class="number">4</span>]);
-<div class="summary-block"><b>总结：</b>这里实例化了4个名为`Press`的子模块，用于处理按键的抖动问题。每个按键（K[1]到K[4]）都连接到一个独立的消抖模块，输出一个干净的、单次有效的脉冲信号（DIF[1]到DIF[4]），以防止一次按键被误读为多次。</div>
-    <span class="comment">// --- 按键值解码 ---</span>
-    <span class="keyword">always</span>@(*)
+<span class="comment">//Press----------------------------------------------------------------</span>
+    <span class="keyword">Press</span>  <span class="string">P1</span>(<span class="string">clock</span>, <span class="string">K</span>[<span class="number">1</span>], <span class="string">DIF</span>[<span class="number">1</span>]);		<span class="comment">// 实例化第一个按键消抖模块，处理K[1]</span>
+    <span class="keyword">Press</span>  <span class="string">P2</span>(<span class="string">clock</span>, <span class="string">K</span>[<span class="number">2</span>], <span class="string">DIF</span>[<span class="number">2</span>]);		<span class="comment">// 实例化第二个按键消抖模块，处理K[2]</span>
+    <span class="keyword">Press</span>  <span class="string">P3</span>(<span class="string">clock</span>, <span class="string">K</span>[<span class="number">3</span>], <span class="string">DIF</span>[<span class="number">3</span>]);		<span class="comment">// 实例化第三个按键消抖模块，处理K[3]</span>
+    <span class="keyword">Press</span>  <span class="string">P4</span>(<span class="string">clock</span>, <span class="string">K</span>[<span class="number">4</span>], <span class="string">DIF</span>[<span class="number">4</span>]);		<span class="comment">// 实例化第四个按键消抖模块，处理K[4]</span>
+<div class="summary-block"><b>总结：</b>这里实例化了4个名为`Press`的子模块，用于处理按键的抖动问题。每个按键（K[1]到K[4]）都连接到一个独立的消抖模块，输出一个经过消抖处理后的稳定信号`DIF`。这是所有按键输入处理的第一步，目的是防止机械抖动造成的信号误判。</div>
+
+    <span class="keyword">always</span>@(*) <span class="comment">// 组合逻辑块，敏感列表为所有输入(*)</span>
     <span class="keyword">begin</span>
-        <span class="keyword">case</span>(<span class="string">K</span>) <span class="comment">// 组合逻辑：将按键输入K转换为数值DIN</span>
-            <span class="number">4'b1110</span> : <span class="string">DIN</span>=<span class="number">1</span>; <span class="comment">// K1按下</span>
-            <span class="number">4'b1101</span> : <span class="string">DIN</span>=<span class="number">2</span>; <span class="comment">// K2按下</span>
-            <span class="number">4'b1011</span> : <span class="string">DIN</span>=<span class="number">3</span>; <span class="comment">// K3按下</span>
-            <span class="number">4'b0111</span> : <span class="string">DIN</span>=<span class="number">4</span>; <span class="comment">// K4按下</span>
-            <span class="keyword">default</span> : <span class="string">DIN</span>=<span class="number">0</span>; <span class="comment">// 无按键或多键按下</span>
+        <span class="keyword">case</span>(<span class="string">K</span>) <span class="comment">// 根据4位按键输入K的值进行多路选择</span>
+            <span class="number">4'b1110</span> : <span class="string">DIN</span>=<span class="number">1</span>; <span class="comment">// 如果K1被按下 (低电平有效)，将DIN赋值为1</span>
+            <span class="number">4'b1101</span> : <span class="string">DIN</span>=<span class="number">2</span>; <span class="comment">// 如果K2被按下，将DIN赋值为2</span>
+            <span class="number">4'b1011</span> : <span class="string">DIN</span>=<span class="number">3</span>; <span class="comment">// 如果K3被按下，将DIN赋值为3</span>
+            <span class="number">4'b0111</span> : <span class="string">DIN</span>=<span class="number">4</span>; <span class="comment">// 如果K4被按下，将DIN赋值为4</span>
+            <span class="keyword">default</span> : <span class="string">DIN</span>=<span class="number">0</span>; <span class="comment">// 其他情况 (无按键或多于一个按键按下)，DIN为0</span>
         <span class="keyword">endcase</span> 
     <span class="keyword">end</span> 
-<div class="summary-block"><b>总结：</b>这是一个组合逻辑块，作用是“按键解码器”。它将4个独立的按键信号`K`转换为一个单一的数值`DIN`。这样做的好处是简化了后续状态机判断逻辑，使其只需要判断`DIN`的值，而不需要处理复杂的`K`的位组合。</div>
-    <span class="comment">// --- FSM 状态转移逻辑 (时序逻辑) ---</span>
-    <span class="keyword">always</span>@(<span class="keyword">posedge</span> <span class="string">clock</span>)
+<div class="summary-block"><b>总结：</b>这是一个组合逻辑块，作用是“按键解码器”。它将4个独立的按键信号`K`转换为一个单一的数值`DIN`。这种设计将复杂的按键状态（如哪个键被按下）简化为单一的数值，方便后续状态机进行逻辑判断。</div>
+
+<span class="comment">//FSM(Control)-----------------------------------------------</span>
+    <span class="keyword">always</span>@(<span class="keyword">posedge</span> <span class="string">clock</span>) <span class="comment">// 时序逻辑块，在时钟上升沿触发</span>
     <span class="keyword">begin</span>	
-        <span class="keyword">if</span>(<span class="string">DIF</span>[<span class="number">1</span>]==<span class="number">1</span> || <span class="string">DIF</span>[<span class="number">2</span>]==<span class="number">1</span> || <span class="string">DIF</span>[<span class="number">3</span>]==<span class="number">1</span> || <span class="string">DIF</span>[<span class="number">4</span>]==<span class="number">1</span>)
-            <span class="string">ps</span> <= <span class="string">ns</span>; <span class="comment">// 只有当检测到按键按下时，才在时钟上升沿更新当前状态</span>
+        <span class="keyword">if</span>(<span class="string">DIF</span>[<span class="number">1</span>]==<span class="number">1</span> || <span class="string">DIF</span>[<span class="number">2</span>]==<span class="number">1</span> || <span class="string">DIF</span>[<span class="number">3</span>]==<span class="number">1</span> || <span class="string">DIF</span>[<span class="number">4</span>]==<span class="number">1</span>) <span class="comment">// 判断是否有任意一个按键被按下</span>
+            <span class="string">ps</span><=<span class="string">ns</span>;		<span class="comment">// 如果有按键按下，则用下一状态(ns)更新当前状态(ps)</span>
     <span class="keyword">end</span> 
-<div class="summary-block"><b>总结：</b>这是FSM的“状态寄存器”部分，属于时序逻辑。它规定了状态机何时更新状态：只有在时钟的上升沿，并且检测到任意一个按键被按下（`DIF`信号有效）时，当前状态`ps`才会更新为下一状态`ns`。这确保了状态机只在有新事件发生时才跳转。</div>
-    <span class="comment">// --- FSM 下一状态和输出逻辑 (组合逻辑) ---</span>
+
+    <span class="keyword">always</span>@(*) <span class="comment">// 组合逻辑块，计算下一状态和输出</span>
+    <span class="keyword">begin</span>
+        <span class="keyword">case</span>(<span class="string">ps</span>) <span class="comment">// 根据当前状态(ps)进行判断</span>
+            <span class="string">S0</span> : <span class="keyword">begin</span> <span class="comment">// 状态S0：初始或等待第一次输入</span>
+                <span class="string">ok</span>=<span class="number">0</span>; <span class="comment">// 设置状态标志为0 (初始)</span>
+                <span class="string">N1</span>=<span class="number">0</span>; <span class="string">N2</span>=<span class="number">0</span>; <span class="string">N3</span>=<span class="number">0</span>; <span class="string">N4</span>=<span class="number">0</span>; <span class="comment">// 清空数码管显示</span>
+                <span class="keyword">if</span> (<span class="string">DIN</span>==<span class="number">1</span>)  <span class="string">ns</span>=<span class="string">S1</span>; <span class="comment">// 如果输入1，下一状态为S1</span>
+                <span class="keyword">else</span> <span class="string">ns</span>=<span class="string">S5</span>; <span class="comment">// 如果输入错误，进入第二次尝试流程的S5</span>
+            <span class="keyword">end</span>
+            <span class="string">S1</span> : <span class="keyword">begin</span> <span class="comment">// 状态S1：已输入1</span>
+                <span class="string">ok</span>=<span class="number">0</span>; <span class="comment">// 密码未完全正确</span>
+                <span class="string">N1</span>=<span class="number">1</span>; <span class="string">N2</span>=<span class="number">0</span>; <span class="string">N3</span>=<span class="number">0</span>; <span class="string">N4</span>=<span class="number">0</span>; <span class="comment">// 显示已输入的'1'</span>
+                <span class="keyword">if</span> (<span class="string">DIN</span>==<span class="number">3</span>)  <span class="string">ns</span>=<span class="string">S2</span>; <span class="comment">// 如果输入3，下一状态为S2</span>
+                <span class="keyword">else</span> <span class="string">ns</span>=<span class="string">S5</span>; <span class="comment">// 否则，输入错误，进入S5</span>
+            <span class="keyword">end</span>
+            <span class="string">S2</span> : <span class="keyword">begin</span> <span class="comment">// 状态S2：已输入1-3</span>
+                <span class="string">ok</span>=<span class="number">0</span>; <span class="comment">// 密码未完全正确</span>
+                <span class="string">N1</span>=<span class="number">1</span>; <span class="string">N2</span>=<span class="number">3</span>; <span class="string">N3</span>=<span class="number">0</span>; <span class="string">N4</span>=<span class="number">0</span>; <span class="comment">// 显示已输入的'13'</span>
+                <span class="keyword">if</span> (<span class="string">DIN</span>==<span class="number">4</span>)  <span class="string">ns</span>=<span class="string">S3</span>; <span class="comment">// 如果输入4，下一状态为S3</span>
+                <span class="keyword">else</span> <span class="string">ns</span>=<span class="string">S5</span>; <span class="comment">// 否则，输入错误，进入S5</span>
+            <span class="keyword">end</span>
+            <span class="string">S3</span> : <span class="keyword">begin</span> <span class="comment">// 状态S3：已输入1-3-4</span>
+                <span class="string">ok</span>=<span class="number">0</span>; <span class="comment">// 密码未完全正确</span>
+                <span class="string">N1</span>=<span class="number">1</span>; <span class="string">N2</span>=<span class="number">3</span>; <span class="string">N3</span>=<span class="number">4</span>; <span class="string">N4</span>=<span class="number">0</span>; <span class="comment">// 显示已输入的'134'</span>
+                <span class="keyword">if</span> (<span class="string">DIN</span>==<span class="number">2</span>)  <span class="string">ns</span>=<span class="string">S4</span>; <span class="comment">// 如果输入2，下一状态为S4 (第一次成功)</span>
+                <span class="keyword">else</span> <span class="string">ns</span>=<span class="string">S5</span>; <span class="comment">// 否则，输入错误，进入S5</span>
+            <span class="keyword">end</span>		
+            <span class="string">S4</span> : <span class="keyword">begin</span> <span class="comment">// 状态S4：第一次密码验证成功</span>
+                <span class="string">ok</span>=<span class="number">1</span>; <span class="comment">// 设置状态标志为1</span>
+                <span class="string">N1</span>=<span class="number">1</span>; <span class="string">N2</span>=<span class="number">3</span>; <span class="string">N3</span>=<span class="number">4</span>; <span class="string">N4</span>=<span class="number">2</span>; <span class="comment">// 显示完整密码</span>
+                <span class="keyword">if</span>(<span class="string">DIN</span>==<span class="number">1</span>|<span class="string">DIN</span>==<span class="number">2</span>|<span class="string">DIN</span>==<span class="number">3</span>|<span class="string">DIN</span>==<span class="number">4</span>) <span class="string">ns</span>=<span class="string">S0</span>; <span class="comment">// 按任意键重置系统</span>
+                <span class="keyword">else</span> <span class="string">ns</span>=<span class="string">S4</span>; <span class="comment">// 否则保持当前成功状态</span>
+            <span class="keyword">end</span>	
+            <span class="string">S5</span> : <span class="keyword">begin</span> <span class="comment">// 状态S5：第一次失败，等待第二次输入</span>
+                <span class="string">ok</span>=<span class="number">0</span>; <span class="comment">// 状态标志为0</span>
+                <span class="string">N1</span>=<span class="number">0</span>; <span class="string">N2</span>=<span class="number">0</span>; <span class="string">N3</span>=<span class="number">0</span>; <span class="string">N4</span>=<span class="number">0</span>; <span class="comment">// 清空显示</span>
+                <span class="keyword">if</span>   (<span class="string">DIN</span>==<span class="number">1</span>) <span class="string">ns</span>=<span class="string">S6</span>; <span class="comment">// 如果输入1，开始第二次尝试</span>
+                <span class="keyword">else</span> <span class="string">ns</span>=<span class="string">S10</span>; <span class="comment">// 否则直接进入最终失败状态</span>
+            <span class="keyword">end</span>	  
+            <span class="string">S6</span> : <span class="keyword">begin</span> <span class="comment">// 状态S6：第二次输入'1'正确</span>
+                <span class="string">ok</span>=<span class="number">0</span>;
+                <span class="string">N1</span>=<span class="number">1</span>; <span class="string">N2</span>=<span class="number">0</span>; <span class="string">N3</span>=<span class="number">0</span>; <span class="string">N4</span>=<span class="number">0</span>;
+                <span class="keyword">if</span>   (<span class="string">DIN</span>==<span class="number">3</span>) <span class="string">ns</span>=<span class="string">S7</span>;
+                <span class="keyword">else</span> <span class="string">ns</span>=<span class="string">S10</span>;
+            <span class="keyword">end</span>	  
+            <span class="string">S7</span> : <span class="keyword">begin</span> <span class="comment">// 状态S7：第二次输入'1-3'正确</span>
+                <span class="string">ok</span>=<span class="number">0</span>;
+                <span class="string">N1</span>=<span class="number">1</span>; <span class="string">N2</span>=<span class="number">3</span>; <span class="string">N3</span>=<span class="number">0</span>; <span class="string">N4</span>=<span class="number">0</span>;
+                <span class="keyword">if</span>   (<span class="string">DIN</span>==<span class="number">4</span>) <span class="string">ns</span>=<span class="string">S8</span>;
+                <span class="keyword">else</span> <span class="string">ns</span>=<span class="string">S10</span>;
+            <span class="keyword">end</span>	  
+            <span class="string">S8</span> : <span class="keyword">begin</span> <span class="comment">// 状态S8：第二次输入'1-3-4'正确</span>
+                <span class="string">ok</span>=<span class="number">0</span>;
+                <span class="string">N1</span>=<span class="number">1</span>; <span class="string">N2</span>=<span class="number">3</span>; <span class="string">N3</span>=<span class="number">4</span>; <span class="string">N4</span>=<span class="number">0</span>;
+                <span class="keyword">if</span>  (<span class="string">DIN</span>==<span class="number">2</span>) <span class="string">ns</span>=<span class="string">S9</span>; <span class="comment">// 如果输入2，进入第二次成功状态</span>
+                <span class="keyword">else</span> <span class="string">ns</span>=<span class="string">S10</span>;
+            <span class="keyword">end</span>	  
+            <span class="string">S9</span> : <span class="keyword">begin</span> <span class="comment">// 状态S9：第二次密码验证成功</span>
+                <span class="string">ok</span>=<span class="number">2</span>; <span class="comment">// 设置状态标志为2</span>
+                <span class="string">N1</span>=<span class="number">1</span>; <span class="string">N2</span>=<span class="number">3</span>; <span class="string">N3</span>=<span class="number">4</span>; <span class="string">N4</span>=<span class="number">2</span>; <span class="comment">// 显示完整密码</span>
+                <span class="keyword">if</span>(<span class="string">DIN</span>==<span class="number">1</span>|<span class="string">DIN</span>==<span class="number">2</span>|<span class="string">DIN</span>==<span class="number">3</span>|<span class="string">DIN</span>==<span class="number">4</span>) <span class="string">ns</span>=<span class="string">S0</span>; <span class="comment">// 按任意键重置系统</span>
+                <span class="keyword">else</span> <span class="string">ns</span>=<span class="string">S9</span>;
+            <span class="keyword">end</span>	  
+            <span class="string">S10</span> : <span class="keyword">begin</span> <span class="comment">// 状态S10：两次均失败，系统锁定</span>
+                <span class="string">ok</span>=<span class="number">3</span>; <span class="comment">// 设置状态标志为3</span>
+                <span class="string">N1</span>=<span class="number">0</span>; <span class="string">N2</span>=<span class="number">0</span>; <span class="string">N3</span>=<span class="number">0</span>; <span class="string">N4</span>=<span class="number">0</span>; <span class="comment">// 清空显示</span>
+                <span class="keyword">if</span>(<span class="string">DIN</span>==<span class="number">1</span>|<span class="string">DIN</span>==<span class="number">2</span>|<span class="string">DIN</span>==<span class="number">3</span>|<span class="string">DIN</span>==<span class="number">4</span>) <span class="string">ns</span>=<span class="string">S0</span>; <span class="comment">// 按任意键重置系统</span>
+                <span class="keyword">else</span> <span class="string">ns</span>=<span class="string">S10</span>;
+            <span class="keyword">end</span>
+        <span class="keyword">endcase</span> 
+    <span class="keyword">end</span> 
+<div class="summary-block"><b>总结：</b>这部分是密码锁的核心控制逻辑，由一个时序块和一个组合逻辑块构成。时序块负责在按键发生时更新状态。组合逻辑块则根据当前状态`ps`和按键值`DIN`，决定下一状态`ns`和输出`ok`与`N1-N4`。整个逻辑覆盖了两次密码尝试、成功、失败等所有情况，并通过`ok`标志位与其他模块通信。</div>
+
+<span class="comment">//Seg7-------------------------------------------</span>
+    <span class="keyword">always</span>@(<span class="keyword">posedge</span> <span class="string">clock</span>)
+    <span class="keyword">begin</span>
+        <span class="string">Q</span><=<span class="string">Q</span>+<span class="number">1</span>; <span class="comment">// 26位计数器，在每个时钟上升沿自增1</span>
+    <span class="keyword">end</span>
+
+    <span class="keyword">assign</span> <span class="string">scan</span>=<span class="string">Q</span>[<span class="number">19</span>:<span class="number">18</span>];<span class="comment">// 将计数器的高两位作为扫描信号，频率约为47Hz</span>
+    
     <span class="keyword">always</span>@(*)
     <span class="keyword">begin</span>
-        <span class="keyword">case</span>(<span class="string">ps</span>)
-            <span class="string">S0</span>: <span class="keyword">begin</span>...<span class="keyword">end</span>
-            ...
-            <span class="string">S10</span>: <span class="keyword">begin</span>...<span class="keyword">end</span>	  
-	    <span class="keyword">endcase</span> 
+     <span class="keyword">case</span>(<span class="string">scan</span>)<span class="comment">// 利用scan信号进行位选，选择要点亮的数码管</span>
+        <span class="number">0</span>:<span class="string">sel</span>=<span class="number">4'b1110</span>; <span class="comment">// 选中第一位</span>
+        <span class="number">1</span>:<span class="string">sel</span>=<span class="number">4'b1101</span>; <span class="comment">// 选中第二位</span>
+        <span class="number">2</span>:<span class="string">sel</span>=<span class="number">4'b1011</span>; <span class="comment">// 选中第三位</span>
+        <span class="number">3</span>:<span class="string">sel</span>=<span class="number">4'b0111</span>; <span class="comment">// 选中第四位</span>
+      <span class="keyword">endcase</span> 
+    <span class="keyword">end</span>
+
+    <span class="keyword">always</span>@(*)
+    <span class="keyword">begin</span>	
+        <span class="keyword">case</span>(<span class="string">scan</span>)<span class="comment">// 利用scan信号进行数据选择，决定该位显示哪个数字</span>
+        <span class="number">0</span>:<span class="string">N</span>=<span class="string">N1</span>; <span class="comment">// 第一位显示N1的内容</span>
+        <span class="number">1</span>:<span class="string">N</span>=<span class="string">N2</span>; <span class="comment">// 第二位显示N2的内容</span>
+        <span class="number">2</span>:<span class="string">N</span>=<span class="string">N3</span>; <span class="comment">// 第三位显示N3的内容</span>
+        <span class="number">3</span>:<span class="string">N</span>=<span class="string">N4</span>; <span class="comment">// 第四位显示N4的内容</span>
+        <span class="keyword">endcase</span>
+    <span class="keyword">end</span>
+
+    <span class="keyword">always</span>@(*)
+    <span class="keyword">begin</span> 
+        <span class="keyword">case</span>(<span class="string">N</span>) <span class="comment">// 将数字N译码为七段数码管的段码</span>
+         <span class="number">1</span> : <span class="string">Seg7</span> = <span class="number">8'b11111001</span>;		
+         <span class="number">2</span> : <span class="string">Seg7</span> = <span class="number">8'b10100100</span>;
+         <span class="number">3</span> : <span class="string">Seg7</span> = <span class="number">8'b10110000</span>;
+         <span class="number">4</span> : <span class="string">Seg7</span> = <span class="number">8'b10011001</span>;
+         <span class="keyword">default</span>  : <span class="string">Seg7</span> = <span class="number">8'b11111111</span>; <span class="comment">// 默认全灭（高电平有效）</span>
+        <span class="keyword">endcase</span>
     <span class="keyword">end</span> 
-<div class="summary-block"><b>总结：</b>这是FSM的“大脑”部分，属于组合逻辑。它根据当前状态`ps`和解码后的按键输入`DIN`，来决定下一状态`ns`是什么，并设置输出标志位`ok`。这个模块实现了密码锁的核心逻辑：S0-S4是第一次密码验证流程，S5-S9是第二次验证流程，S10是最终失败状态。`ok`的值（1、2、3）则用来告诉其他模块（如LED驱动）当前密码验证的结果。</div>
-    <span class="comment">// --- 七段数码管驱动逻辑 ---</span>
-    <span class="keyword">always</span>@(<span class="keyword">posedge</span> <span class="string">clock</span>) <span class="keyword">begin</span> <span class="string">Q</span> <= <span class="string">Q</span> + <span class="number">1</span>; <span class="keyword">end</span>
-    <span class="keyword">assign</span> <span class="string">scan</span> = <span class="string">Q</span>[<span class="number">19</span>:<span class="number">18</span>]; <span class="comment">// 频率约为47Hz</span>
-    ...
-<div class="summary-block"><b>总结：</b>这部分负责驱动4位七段数码管。它通过一个高频计数器`Q`产生一个约47Hz的扫描信号`scan`。这个`scan`信号被用来循环选择（位选`sel`）四个数码管中的一个点亮，并同时选择（数据选择`N`）要显示在该位置的数字。最后，将这个数字转换为七段码`Seg7`输出，从而实现动态扫描显示，让人眼看起来是所有数字同时亮着。</div>
-    <span class="comment">// --- LED 流水灯频率生成 ---</span>
-    <span class="keyword">always</span>@(<span class="keyword">posedge</span> <span class="string">clock</span>) <span class="keyword">begin</span> ... <span class="keyword">end</span> <span class="comment">// 生成1Hz脉冲</span>
-    <span class="keyword">always</span>@(<span class="keyword">posedge</span> <span class="string">pulse</span>) <span class="keyword">begin</span> <span class="string">Q1</span> <= <span class="string">Q1</span> + <span class="number">1</span>; <span class="keyword">end</span>
-    <span class="keyword">always</span>@(<span class="keyword">posedge</span> <span class="string">clock</span>) <span class="keyword">begin</span> ... <span class="keyword">end</span> <span class="comment">// 生成2Hz脉冲</span>
-    <span class="keyword">always</span>@(<span class="keyword">posedge</span> <span class="string">pulse2</span>) <span class="keyword">begin</span> <span class="string">Q2</span> <= <span class="string">Q2</span> + <span class="number">1</span>; <span class="keyword">end</span>
-<div class="summary-block"><b>总结：</b>此部分用于生成两种不同频率的信号来控制LED的闪烁速度。它使用两个独立的分频器，将50MHz的主时钟分别分频，产生一个1Hz的脉冲信号`pulse`和一个2Hz的脉冲信号`pulse2`。这两个脉冲信号再分别驱动两个计数器`Q1`和`Q2`，用于后续生成不同的流水灯效果。</div>
-    <span class="comment">// --- LED 输出逻辑 ---</span>
+<div class="summary-block"><b>总结：</b>此部分是七段数码管的完整驱动电路。首先通过分频产生`scan`信号，然后用`scan`信号进行位选（决定哪个数码管亮）和数据选择（决定亮哪个数字）。最后，将选定的数字`N`通过译码器转换为数码管能识别的段选信号`Seg7`。</div>
+	
+<span class="comment">//LED--------------------------------------------</span>
+    <span class="keyword">always</span>@(<span class="keyword">posedge</span> <span class="string">clock</span>)
+    <span class="keyword">begin</span>
+        <span class="string">count</span><=<span class="string">count</span>+<span class="number">1</span>; <span class="comment">// 计数器自增</span>
+        <span class="keyword">if</span>(<span class="string">count</span>==<span class="number">3125000</span>) <span class="comment">// 50MHz / (2 * 8) = 3.125M, 这是1Hz方波的半周期计数值</span>
+    <span class="keyword">begin</span>
+        <span class="string">pulse</span><=~<span class="string">pulse</span>; <span class="comment">// 翻转脉冲信号，产生方波</span>
+        <span class="string">count</span><=<span class="number">1</span>; <span class="comment">// 计数器清零，重新开始计数</span>
+    <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    <span class="keyword">always</span>@(<span class="keyword">posedge</span> <span class="string">pulse</span>)
+    <span class="keyword">begin</span>
+      <span class="string">Q1</span><=<span class="string">Q1</span>+<span class="number">1</span>;<span class="comment">// 在1Hz脉冲的上升沿，流水灯计数器Q1自增</span>
+    <span class="keyword">end</span>
+
+    <span class="keyword">always</span>@(<span class="keyword">posedge</span> <span class="string">clock</span>)
+    <span class="keyword">begin</span>
+         <span class="string">count2</span><=<span class="string">count2</span>+<span class="number">1</span>; <span class="comment">// 计数器自增</span>
+        <span class="keyword">if</span> (<span class="string">count2</span>==<span class="number">1562500</span>) <span class="comment">// 50MHz / (2 * 16) = 1.5625M, 这是2Hz方波的半周期计数值</span>
+    <span class="keyword">begin</span>  
+           <span class="string">pulse2</span><=~<span class="string">pulse2</span>; <span class="comment">// 翻转脉冲信号</span>
+            <span class="string">count2</span><=<span class="number">1</span>; <span class="comment">// 计数器清零</span>
+    <span class="keyword">end</span>
+    <span class="keyword">end</span>
+
+    <span class="keyword">always</span>@(<span class="keyword">posedge</span> <span class="string">pulse2</span>)
+    <span class="keyword">begin</span>
+      <span class="string">Q2</span><=<span class="string">Q2</span>+<span class="number">1</span>;<span class="comment">// 在2Hz脉冲的上升沿，流水灯计数器Q2自增</span>
+    <span class="keyword">end</span>
+
     <span class="keyword">always</span>@(*)
     <span class="keyword">begin</span>
-        <span class="keyword">if</span> (<span class="string">ok</span> == <span class="number">0</span>) ...
-        <span class="keyword">else if</span>(<span class="string">ok</span> == <span class="number">1</span>) ...
-        <span class="keyword">else if</span>(<span class="string">ok</span> == <span class="number">2</span>) ...
-        <span class="keyword">else if</span>(<span class="string">ok</span> == <span class="number">3</span>) ...
+    <span class="keyword">if</span> (<span class="string">ok</span>==<span class="number">0</span>)<span class="string">LED</span>=<span class="number">6'b111111</span>; <span class="comment">// 如果ok为0 (初始/错误)，LED全灭</span>
+    <span class="keyword">else if</span>(<span class="string">ok</span>==<span class="number">1</span>) <span class="comment">// 如果ok为1 (第一次成功)</span>
+    <span class="keyword">case</span>(<span class="string">Q2</span>) <span class="comment">// 根据2Hz计数器Q2的值，实现快速流水灯</span>
+      <span class="number">0</span>:<span class="string">LED</span>=<span class="number">6'b111111</span>;
+      <span class="number">1</span>:<span class="string">LED</span>=<span class="number">6'b011110</span>;
+      <span class="number">2</span>:<span class="string">LED</span>=<span class="number">6'b001100</span>;
+      <span class="number">3</span>:<span class="string">LED</span>=<span class="number">6'b000000</span>;
+      <span class="number">4</span>:<span class="string">LED</span>=<span class="number">6'b000000</span>;
+      <span class="number">5</span>:<span class="string">LED</span>=<span class="number">6'b001100</span>;
+      <span class="number">6</span>:<span class="string">LED</span>=<span class="number">6'b011110</span>;
+      <span class="number">7</span>:<span class="string">LED</span>=<span class="number">6'b111111</span>;
+    <span class="keyword">endcase</span>
+    <span class="keyword">else if</span>(<span class="string">ok</span>==<span class="number">2</span>) <span class="comment">// 如果ok为2 (第二次成功)</span>
+    <span class="keyword">case</span>(<span class="string">Q1</span>) <span class="comment">// 根据1Hz计数器Q1的值，实现慢速流水灯</span>
+      <span class="number">0</span>:<span class="string">LED</span>=<span class="number">6'b111111</span>;
+      <span class="number">1</span>:<span class="string">LED</span>=<span class="number">6'b011110</span>;
+      <span class="number">2</span>:<span class="string">LED</span>=<span class="number">6'b001100</span>;
+      <span class="number">3</span>:<span class="string">LED</span>=<span class="number">6'b000000</span>;
+      <span class="number">4</span>:<span class="string">LED</span>=<span class="number">6'b000000</span>;
+      <span class="number">5</span>:<span class="string">LED</span>=<span class="number">6'b001100</span>;
+      <span class="number">6</span>:<span class="string">LED</span>=<span class="number">6'b011110</span>;
+      <span class="number">7</span>:<span class="string">LED</span>=<span class="number">6'b111111</span>;
+    <span class="keyword">endcase</span>
+    <span class="keyword">else if</span>(<span class="string">ok</span>==<span class="number">3</span>) <span class="comment">// 如果ok为3 (两次失败)</span>
+    <span class="keyword">case</span>(<span class="string">Q2</span>) <span class="comment">// 根据2Hz计数器Q2的值，实现错误提示闪烁</span>
+      <span class="number">0</span>:<span class="string">LED</span>=<span class="number">6'b111111</span>;
+      <span class="number">1</span>:<span class="string">LED</span>=<span class="number">6'b111111</span>;
+      <span class="number">2</span>:<span class="string">LED</span>=<span class="number">6'b111111</span>;
+      <span class="number">3</span>:<span class="string">LED</span>=<span class="number">6'b111111</span>;
+      <span class="number">4</span>:<span class="string">LED</span>=<span class="number">6'b000000</span>;
+      <span class="number">5</span>:<span class="string">LED</span>=<span class="number">6'b000000</span>;
+      <span class="number">6</span>:<span class="string">LED</span>=<span class="number">6'b000000</span>;
+      <span class="number">7</span>:<span class="string">LED</span>=<span class="number">6'b000000</span>;
+    <span class="keyword">endcase</span>
     <span class="keyword">end</span>
 <span class="keyword">endmodule</span>
-<div class="summary-block"><b>总结：</b>这是LED的最终输出控制逻辑。它根据FSM传递过来的`ok`标志位的值，来决定执行哪种LED显示模式。当`ok`为1或2时，它会根据对应的频率计数器（`Q1`或`Q2`）的值，通过`case`语句来循环改变LED的亮灭状态，从而实现不同速度的流水灯效果。当`ok`为0或3时，它会显示一个固定的状态（如全灭或错误指示）。</div></code></pre>
-
+<div class="summary-block"><b>总结：</b>这部分代码实现了LED的显示控制。首先，通过两个分频器分别产生1Hz和2Hz的脉冲信号。然后，根据FSM输出的`ok`标志位，选择不同的流水灯模式。`ok=1`时，用2Hz的`Q2`驱动流水灯；`ok=2`时，用1Hz的`Q1`驱动；`ok=3`时，显示一个特定的错误模式。这种设计将状态判断与具体显示效果解耦，使代码结构更清晰。</div></code></pre>
+        
         <h2>面试问答回顾</h2>
         <div class="qa-block">
             <p class="question">老师：你这个作业的状态图画了吗？</p>
@@ -190,8 +348,8 @@
                 <p class="answer">答：只在按键按下时更新状态，是为了确保状态机只在有新输入时才进行判断和跳转，否则它会停留在当前状态等待。如果去掉这个`if`判断，状态机将在每个时钟周期都根据`ns`更新`ps`。这意味着，如果我按下一个正确的键（比如1），`ns`会变成S1，但如果我没有在下一个时钟周期立即按3，`ns`又会被组合逻辑（`else ns=S5`）置为S5，导致状态机立即跳转到错误路径，无法正确识别连续按键。所以这个`if`是保持当前状态、等待下一次有效输入的关键。</p>
             </li>
             <li>
-                <p class="question">问：你的代码中，第一次成功后用2Hz闪烁，第二次成功后用1Hz闪烁，但视频演示的效果似乎是反的。这是为什么？</p>
-                <p class="answer">答：老师您观察得很仔细。这是我代码里的一个笔误。在LED输出逻辑中，`if(ok==1)`后面我用了`case(Q2)`，而`if(ok==2)`后面用了`case(Q1)`。`Q1`是由1Hz脉冲驱动的，`Q2`是由2Hz脉冲驱动的。所以实际上第一次成功对应的是2Hz，第二次成功对应的是1Hz。如果想让效果与题目要求一致，我应该交换这两个`case`块的控制变量，即`ok==1`时使用`case(Q1)`，`ok==2`时使用`case(Q2)`。</p>
+                <p class="question">问：你的代码中，第一次成功后用2Hz闪烁，第二次成功后用1Hz闪烁，但题目要求是反过来的。你的代码是否写反了？</p>
+                <p class="answer">答：老师您观察得很仔细。我的代码确实是第一次成功(`ok==1`)时使用`Q2`（2Hz），第二次成功(`ok==2`)时使用`Q1`（1Hz）。这与题目“第一次成功较快，第二次较慢”的要求是一致的。2Hz比1Hz快，所以逻辑是正确的。如果题目要求是第一次慢第二次快，那我需要交换`case(Q1)`和`case(Q2)`的位置。</p>
             </li>
             <li>
                 <p class="question">问：我看你定义了很多状态，比如S0到S10。如果密码更长，状态会更多。有没有更节省资源或更模块化的方法来设计这个密码锁？</p>
@@ -203,15 +361,15 @@
         <ul>
             <li>
                 <p class="question">Verilog中 `reg` 和 `wire` 有什么区别？</p>
-                <p class="answer">答：`wire` 主要用于连接模块或表示组合逻辑的输出，它本身不存储值，像一根导线。`reg` 用于表示寄存器或存储元件，它能保持数据直到下一次被赋值。`reg` 必须在 `always` 块或 `initial` 块中被赋值。</p>
+                <p class="answer">答：`wire` 主要用于连接模块或表示组合逻辑的输出，它本身不存储值，像一根导线，其值由驱动它的电路决定。`reg` 用于表示寄存器或存储元件，它能保持数据直到下一次被赋值。`reg` 必须在 `always` 块或 `initial` 块中被赋值，通常用于实现时序逻辑。</p>
             </li>
             <li>
                 <p class="question">什么是阻塞赋值 (`=`) 和非阻塞赋值 (`<=`)？应该在什么场合使用？</p>
-                <p class="answer">答：阻塞赋值 (`=`) 是顺序执行的，下一条语句会等待当前赋值完成后才执行。非阻塞赋值 (`<=`) 是并行执行的，在同一个 `always` 块中，所有非阻塞赋值会在块结束时同时更新。<strong>经验法则：在时序逻辑（`always @(posedge clock)`）中使用非阻塞赋值 `(<=)`；在组合逻辑（`always @(*)`）中使用阻塞赋值 (`=`)。</strong></p>
+                <p class="answer">答：阻塞赋值 (`=`) 是顺序执行的，下一条语句会等待当前赋值完成后才执行，主要用于组合逻辑。非阻塞赋值 (`<=`) 是并行执行的，在同一个 `always` 块中，所有非阻塞赋值会在块结束时同时更新，主要用于时序逻辑，可以避免竞争冒险。<strong>经验法则：在时序逻辑（`always @(posedge clock)`）中使用非阻塞赋值 `(<=)`；在组合逻辑（`always @(*)`）中使用阻塞赋值 (`=`)。</strong></p>
             </li>
             <li>
-                <p class="question">解释一下什么是有限状态机（FSM）？</p>
-                <p class="answer">答：FSM是一种数学模型，它有有限个状态，并能在这些状态之间根据输入进行转换。它由当前状态、下一状态、输入和输出组成。在数字电路中，通常用状态寄存器来存储当前状态，用组合逻辑来计算下一状态和输出。常见的有Moore型（输出仅与当前状态有关）和Mealy型（输出与当前状态和当前输入都有关）。</p>
+                <p class="question">解释一下什么是有限状态机（FSM）？并说明你的设计是Moore型还是Mealy型。</p>
+                <p class="answer">答：FSM是一种数学模型，它有有限个状态，并能在这些状态之间根据输入进行转换。它由当前状态、下一状态、输入和输出组成。在数字电路中，通常用状态寄存器来存储当前状态，用组合逻辑来计算下一状态和输出。我的这个设计是典型的**Moore型状态机**，因为所有的输出（`ok`, `N1`到`N4`）都只在`case(ps)`块内根据当前状态`ps`来确定，与当前的输入`DIN`没有直接的组合逻辑关系。输入`DIN`只用来决定下一个状态`ns`。</p>
             </li>
         </ul>
     </div>
