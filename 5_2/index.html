@@ -2,171 +2,232 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>Homework 5-2: 自动售货机设计解析</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homework 5-2: 自动售货机设计深度解析 (极致详细版)</title>
     <style>
         body {
-            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             line-height: 1.8;
-            margin: 20px;
-            background-color: #f4f7f6;
-            color: #333;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            color: #212529;
         }
         .container {
             max-width: 900px;
             margin: auto;
-            background: #fff;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+            border: 1px solid #dee2e6;
         }
         h1, h2, h3 {
             color: #28a745;
-            border-bottom: 2px solid #e0e0e0;
+            border-bottom: 2px solid #28a745;
             padding-bottom: 10px;
         }
-        h1 { font-size: 2em; }
-        h2 { font-size: 1.5em; margin-top: 40px;}
-        h3 { font-size: 1.2em; border-bottom: 1px dashed #ccc; }
+        h1 { font-size: 2.2em; text-align: center; border: none; }
+        h2 { font-size: 1.6em; margin-top: 40px; }
+        h3 { font-size: 1.3em; border-bottom: 1px solid #ced4da; color: #20c997; }
         pre {
-            background-color: #282c34;
-            color: #abb2bf;
-            padding: 15px;
-            border-radius: 5px;
+            background-color: #2b2b2b;
+            color: #a9b7c6;
+            padding: 20px;
+            border-radius: 8px;
             overflow-x: auto;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 14px;
-            white-space: pre-wrap; /* 自动换行 */
-            word-wrap: break-word; /* 强制换行 */
-        }
-        code {
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Fira Code', 'Consolas', 'Courier New', monospace;
+            font-size: 15px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
         .comment {
-            color: #5c6370;
-            font-style: normal; /* 注释字体改为非斜体 */
+            color: #808080;
+            font-style: normal;
         }
-        .keyword {
-            color: #c678dd;
-        }
-        .number {
-            color: #d19a66;
-        }
-        .string {
-            color: #98c379;
-        }
+        .keyword { color: #cc7832; }
+        .number { color: #6897bb; }
+        .string { color: #6a8759; }
         .qa-block {
-            background-color: #e6ffed;
-            border-left: 5px solid #28a745;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 5px;
+            background-color: #e6ffee;
+            border-left: 6px solid #28a745;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 8px;
         }
         .question {
             font-weight: bold;
             color: #155724;
+            font-size: 1.1em;
         }
         .answer {
-            margin-top: 5px;
+            margin-top: 8px;
+            padding-left: 15px;
+            border-left: 2px solid #a3d9a5;
         }
         li {
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
         .summary-block {
-            background-color: #e2e8f0;
-            padding: 10px;
-            margin-top: 10px;
-            border-radius: 4px;
-            font-size: 0.9em;
-            color: #4a5568;
+            background-color: #f1f3f5;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 6px;
+            font-size: 0.95em;
+            color: #495057;
+            border: 1px solid #ced4da;
+        }
+        .project-intro {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border: 1px solid #c3e6cb;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Homework 5-2: 自动售货机设计全解析</h1>
-        <p>本项目利用有限状态机（FSM）模拟一个简单的自动售货机。该售货机可以接收1元和2元硬币，商品售价为2元。用户可以投币、购买商品或退款。通过数码管实时显示当前投币金额和找零/出货状态。</p>
+        <h1>Homework 5-2: 自动售货机设计深度解析 (极致详细版)</h1>
+        <div class="project-intro">
+            <p><strong>项目简介：</strong>本项目利用有限状态机（FSM）模拟一个简单的自动售货机。该售货机可以接收1元和2元硬币，商品售价为2元。用户可以投币、购买商品或退款。通过数码管实时显示当前投币金额和找零/出货状态。</p>
+        </div>
 
         <h2>代码及逐行注释</h2>
         <pre><code><span class="keyword">module</span> <span class="string">Homework5_2</span>(<span class="string">clock</span>, <span class="string">K</span>, <span class="string">Seg7</span>, <span class="string">sel</span>);
-    <span class="comment">// 模块声明</span>
-    <span class="keyword">input</span>  		        <span class="string">clock</span>;
-    <span class="keyword">input</span>  		[<span class="number">4</span>:<span class="number">1</span>]<span class="string">K</span>;
-    <span class="keyword">output</span> <span class="keyword">reg</span>  [<span class="number">7</span>:<span class="number">0</span>]<span class="string">Seg7</span>;
-    <span class="keyword">output</span> <span class="keyword">reg</span>  [<span class="number">3</span>:<span class="number">0</span>]<span class="string">sel</span>;
+    <span class="keyword">input</span>  		        <span class="string">clock</span>;      <span class="comment">// 输入：50MHz主时钟信号</span>
+    <span class="keyword">input</span>  		[<span class="number">4</span>:<span class="number">1</span>]<span class="string">K</span>;          <span class="comment">// 输入：4个按键的输入信号 (K1:1元, K2:2元, K3:购买, K4:退款)</span>
+    <span class="keyword">output</span> <span class="keyword">reg</span>  [<span class="number">7</span>:<span class="number">0</span>]<span class="string">Seg7</span>;       <span class="comment">// 输出：七段数码管的段选信号</span>
+    <span class="keyword">output</span>  <span class="keyword">reg</span> [<span class="number">3</span>:<span class="number">0</span>]<span class="string">sel</span>;        <span class="comment">// 输出：四位七段数码管的位选信号</span>
+    <span class="keyword">wire</span> 			[<span class="number">4</span>:<span class="number">1</span>]<span class="string">DIF</span>;        <span class="comment">// 内部连线：存储按键消抖后的信号</span>
+    <span class="keyword">reg</span>			[<span class="number">2</span>:<span class="number">0</span>]<span class="string">DIN</span>, <span class="string">N</span>, <span class="string">N1</span>, <span class="string">N4</span>;	<span class="comment">// DIN: 解码按键值; N: 当前显示数字; N1: 显示投入金额; N4: 显示找零或出货状态</span>
+    <span class="keyword">parameter</span>	[<span class="number">2</span>:<span class="number">0</span>]<span class="string">S0</span>=<span class="number">3'b000</span>, <span class="string">S1</span>=<span class="number">3'b001</span>, <span class="string">S2</span>=<span class="number">3'b010</span>, <span class="string">S3</span>=<span class="number">3'b011</span>, <span class="string">S4</span>=<span class="number">3'b100</span>, <span class="string">S5</span>=<span class="number">3'b101</span>, <span class="string">S6</span>=<span class="number">3'b110</span>, <span class="string">S7</span>=<span class="number">3'b111</span>; <span class="comment">// FSM状态定义，代表不同金额和动作</span>
+    <span class="keyword">reg</span> 			[<span class="number">2</span>:<span class="number">0</span>]<span class="string">ps</span>, <span class="string">ns</span>;       <span class="comment">// 寄存器：ps存储当前状态，ns存储下一状态</span>
+    <span class="keyword">reg</span>         [<span class="number">25</span>:<span class="number">0</span>]<span class="string">Q</span>;          <span class="comment">// 26位计数器，用于生成数码管的动态扫描时钟</span>
+    <span class="keyword">wire</span>        [<span class="number">1</span>:<span class="number">0</span>]<span class="string">scan</span>;       <span class="comment">// 内部连线：从分频计数器Q中提取出的2位扫描信号</span>
+<div class="summary-block"><b>总结：</b>此部分为模块的声明和内部信号定义。定义了时钟、按键输入，以及数码管位选和段选输出。内部信号包括用于按键消抖的`DIF`，解码后的按键值`DIN`，FSM的状态寄存器`ps`和`ns`，以及用于数码管显示的各种信号。</div>
 
-    <span class="comment">// 内部信号定义</span>
-    <span class="keyword">wire</span> 			[<span class="number">4</span>:<span class="number">1</span>]<span class="string">DIF</span>;
-    <span class="keyword">reg</span>			[<span class="number">2</span>:<span class="number">0</span>]<span class="string">DIN</span>, <span class="string">N</span>, <span class="string">N1</span>, <span class="string">N4</span>; <span class="comment">// N1: 显示投入金额, N4: 显示找零或出货状态</span>
-    <span class="keyword">parameter</span>	[<span class="number">2</span>:<span class="number">0</span>]<span class="string">S0</span>=<span class="number">3'b000</span>, <span class="string">S1</span>=<span class="number">3'b001</span>, <span class="string">S2</span>=<span class="number">3'b010</span>, <span class="string">S3</span>=<span class="number">3'b011</span>, <span class="string">S4</span>=<span class="number">3'b100</span>, <span class="string">S5</span>=<span class="number">3'b101</span>, <span class="string">S6</span>=<span class="number">3'b110</span>, <span class="string">S7</span>=<span class="number">3'b111</span>; <span class="comment">// 定义FSM状态，表示不同金额和动作</span>
-    <span class="keyword">reg</span> 			[<span class="number">2</span>:<span class="number">0</span>]<span class="string">ps</span>, <span class="string">ns</span>;
-    <span class="keyword">reg</span>         [<span class="number">25</span>:<span class="number">0</span>]<span class="string">Q</span>;
-    <span class="keyword">wire</span>        [<span class="number">1</span>:<span class="number">0</span>]<span class="string">scan</span>;
-<div class="summary-block"><b>总结：</b>此部分声明了<code>Homework5_2</code>模块及其I/O端口。内部定义了用于按键消抖的<code>DIF</code>信号，用于显示金额和状态的`N1`和`N4`寄存器，以及FSM所需的状态参数和状态寄存器（`ps`, `ns`）。</div>
-    <span class="comment">// --- 按键消抖与解码 (与5-1相同) ---</span>
-    <span class="keyword">Press</span>  <span class="string">P1</span>(<span class="string">clock</span>, <span class="string">K</span>[<span class="number">1</span>], <span class="string">DIF</span>[<span class="number">1</span>]);		
-    <span class="keyword">Press</span>  <span class="string">P2</span>(<span class="string">clock</span>, <span class="string">K</span>[<span class="number">2</span>], <span class="string">DIF</span>[<span class="number">2</span>]);
-    <span class="keyword">Press</span>  <span class="string">P3</span>(<span class="string">clock</span>, <span class="string">K</span>[<span class="number">3</span>], <span class="string">DIF</span>[<span class="number">3</span>]);
-    <span class="keyword">Press</span>  <span class="string">P4</span>(<span class="string">clock</span>, <span class="string">K</span>[<span class="number">4</span>], <span class="string">DIF</span>[<span class="number">4</span>]);
-    <span class="keyword">always</span>@(*) <span class="keyword">begin</span> ... <span class="keyword">endcase</span> <span class="keyword">end</span> 
-<div class="summary-block"><b>总结：</b>这部分的功能与上一个项目完全相同，负责对物理按键进行消抖处理，并将按键操作（投1元、投2元、购买、退款）转换为统一的数字信号`DIN`，供状态机使用。</div>
-    <span class="comment">// --- FSM 状态转移逻辑 ---</span>
-    <span class="keyword">always</span>@(<span class="keyword">posedge</span> <span class="string">clock</span>) <span class="keyword">begin</span> <span class="string">if</span>(<span class="string">DIF</span>[<span class="number">1</span>]==<span class="number">1</span> || <span class="string">DIF</span>[<span class="number">2</span>]==<span class="number">1</span> || <span class="string">DIF</span>[<span class="number">3</span>]==<span class="number">1</span> || <span class="string">DIF</span>[<span class="number">4</span>]==<span class="number">1</span>) <span class="string">ps</span><=<span class="string">ns</span>; <span class="keyword">end</span>
+<span class="comment">//Press----------------------------------------------------------------</span>
+    <span class="keyword">Press</span>  <span class="string">P1</span>(<span class="string">clock</span>, <span class="string">K</span>[<span class="number">1</span>], <span class="string">DIF</span>[<span class="number">1</span>]);		<span class="comment">// 实例化按键1的消抖模块</span>
+    <span class="keyword">Press</span>  <span class="string">P2</span>(<span class="string">clock</span>, <span class="string">K</span>[<span class="number">2</span>], <span class="string">DIF</span>[<span class="number">2</span>]);		<span class="comment">// 实例化按键2的消抖模块</span>
+    <span class="keyword">Press</span>  <span class="string">P3</span>(<span class="string">clock</span>, <span class="string">K</span>[<span class="number">3</span>], <span class="string">DIF</span>[<span class="number">3</span>]);		<span class="comment">// 实例化按键3的消抖模块</span>
+    <span class="keyword">Press</span>  <span class="string">P4</span>(<span class="string">clock</span>, <span class="string">K</span>[<span class="number">4</span>], <span class="string">DIF</span>[<span class="number">4</span>]);		<span class="comment">// 实例化按键4的消抖模块</span>
 
-    <span class="comment">// --- FSM 下一状态和输出逻辑 ---</span>
-    <span class="keyword">always</span>@(*)
+    <span class="keyword">always</span>@(*) <span class="comment">// 组合逻辑块，用于按键解码</span>
     <span class="keyword">begin</span>
-        <span class="keyword">case</span>(<span class="string">ps</span>)
-            <span class="string">S0</span>: <span class="keyword">begin</span> <span class="comment">// 初始状态，金额为0</span>
-                  <span class="string">N1</span>=<span class="number">0</span>; <span class="string">N4</span>=<span class="number">0</span>;
-                  <span class="keyword">if</span> (<span class="string">DIN</span>==<span class="number">1</span>) <span class="string">ns</span>=<span class="string">S1</span>;      <span class="comment">// 投1元，进入S1</span>
-                  <span class="keyword">else if</span> (<span class="string">DIN</span>==<span class="number">2</span>) <span class="string">ns</span>=<span class="string">S2</span>; <span class="comment">// 投2元，进入S2</span>
-                  <span class="keyword">else</span> <span class="string">ns</span>=<span class="string">S0</span>;             <span class="comment">// 其他按键无效，保持S0</span>
+        <span class="keyword">case</span>(<span class="string">K</span>) <span class="comment">// 根据按键输入K的值，将其转换为数值DIN</span>
+            <span class="number">4'b1110</span> : <span class="string">DIN</span>=<span class="number">1</span>; <span class="comment">// K1按下 (投1元)</span>
+            <span class="number">4'b1101</span> : <span class="string">DIN</span>=<span class="number">2</span>; <span class="comment">// K2按下 (投2元)</span>
+            <span class="number">4'b1011</span> : <span class="string">DIN</span>=<span class="number">3</span>; <span class="comment">// K3按下 (购买)</span>
+            <span class="number">4'b0111</span> : <span class="string">DIN</span>=<span class="number">4</span>; <span class="comment">// K4按下 (退款)</span>
+            <span class="keyword">default</span> : <span class="string">DIN</span>=<span class="number">0</span>; <span class="comment">// 无按键或多键按下，视为无效输入</span>
+        <span class="keyword">endcase</span> 
+    <span class="keyword">end</span> 
+<div class="summary-block"><b>总结：</b>这部分实例化了4个按键消抖模块，并将消抖后的按键状态解码为统一的`DIN`信号。`DIN=1`代表投1元，`DIN=2`代表投2元，`DIN=3`代表购买，`DIN=4`代表退款。这种方式简化了后续状态机的逻辑。</div>
+
+<span class="comment">//FSM(Control)-----------------------------------------------</span>
+    <span class="keyword">always</span>@(<span class="keyword">posedge</span> <span class="string">clock</span>) <span class="comment">// 时序逻辑块，负责状态的更新</span>
+    <span class="keyword">begin</span>	
+        <span class="keyword">if</span>(<span class="string">DIF</span>[<span class="number">1</span>]==<span class="number">1</span> || <span class="string">DIF</span>[<span class="number">2</span>]==<span class="number">1</span> || <span class="string">DIF</span>[<span class="number">3</span>]==<span class="number">1</span> || <span class="string">DIF</span>[<span class="number">4</span>]==<span class="number">1</span>)
+            <span class="string">ps</span><=<span class="string">ns</span>;		<span class="comment">// 只有在检测到有效按键时，才在时钟上升沿更新当前状态</span>
+    <span class="keyword">end</span> 
+
+    <span class="keyword">always</span>@(*) <span class="comment">// 组合逻辑块，决定下一状态和输出</span>
+    <span class="keyword">begin</span>
+        <span class="keyword">case</span>(<span class="string">ps</span>) <span class="comment">// 根据当前状态ps进行判断</span>
+            <span class="string">S0</span> : <span class="keyword">begin</span> <span class="comment">// 状态S0: 初始状态，金额为0</span>
+                  <span class="string">N1</span>=<span class="number">0</span>; <span class="string">N4</span>=<span class="number">0</span>; <span class="comment">// 显示投入0元，无找零/出货</span>
+                  <span class="keyword">if</span> (<span class="string">DIN</span>==<span class="number">1</span>)  <span class="string">ns</span>=<span class="string">S1</span>; <span class="comment">// 投1元，进入S1状态</span>
+                  <span class="keyword">else if</span> (<span class="string">DIN</span>==<span class="number">2</span>)  <span class="string">ns</span>=<span class="string">S2</span>; <span class="comment">// 投2元，进入S2状态</span>
+                  <span class="keyword">else</span> <span class="string">ns</span>=<span class="string">S0</span>; <span class="comment">// 其他按键无效，保持在S0</span>
                 <span class="keyword">end</span>
-            <span class="string">S1</span>: <span class="keyword">begin</span> <span class="comment">// 金额为1元</span>
-                  <span class="string">N1</span>=<span class="number">1</span>; <span class="string">N4</span>=<span class="number">0</span>;
-                  <span class="keyword">if</span> (<span class="string">DIN</span>==<span class="number">1</span>) <span class="string">ns</span>=<span class="string">S2</span>;      <span class="comment">// 再投1元，总额2元，进入S2</span>
-                  <span class="keyword">else if</span> (<span class="string">DIN</span>==<span class="number">2</span>) <span class="string">ns</span>=<span class="string">S4</span>; <span class="comment">// 再投2元，总额3元，进入S4（超额）</span>
-                  <span class="keyword">else if</span> (<span class="string">DIN</span>==<span class="number">3</span>) <span class="string">ns</span>=<span class="string">S5</span>; <span class="comment">// 按购买键，钱不够，进入S5提示错误</span>
-                  <span class="keyword">else</span> <span class="string">ns</span>=<span class="string">S6</span>;             <span class="comment">// 按退款键，进入S6退1元</span>
+            <span class="string">S1</span> : <span class="keyword">begin</span> <span class="comment">// 状态S1: 已投入1元</span>
+                  <span class="string">N1</span>=<span class="number">1</span>; <span class="string">N4</span>=<span class="number">0</span>; <span class="comment">// 显示投入1元</span>
+                  <span class="keyword">if</span> (<span class="string">DIN</span>==<span class="number">1</span>)  <span class="string">ns</span>=<span class="string">S2</span>; <span class="comment">// 再投1元，总额2元，进入S2</span>
+                  <span class="keyword">else if</span> (<span class="string">DIN</span>==<span class="number">2</span>)  <span class="string">ns</span>=<span class="string">S4</span>; <span class="comment">// 再投2元，总额3元，进入S4（超额）</span>
+                  <span class="keyword">else if</span> (<span class="string">DIN</span>==<span class="number">3</span>)  <span class="string">ns</span>=<span class="string">S5</span>; <span class="comment">// 按购买键，钱不够，进入S5提示错误/出货失败</span>
+                  <span class="keyword">else</span> <span class="string">ns</span>=<span class="string">S6</span>; <span class="comment">// 按退款键，进入S6退还1元</span>
                 <span class="keyword">end</span>
-            <span class="string">S2</span>: <span class="keyword">begin</span> ... <span class="keyword">end</span>
-            ...
-            <span class="string">S7</span>: <span class="keyword">begin</span> ... <span class="keyword">end</span>	  
+            <span class="string">S2</span> : <span class="keyword">begin</span> <span class="comment">// 状态S2: 已投入2元</span>
+                  <span class="string">N1</span>=<span class="number">2</span>; <span class="string">N4</span>=<span class="number">0</span>; <span class="comment">// 显示投入2元</span>
+                  <span class="keyword">if</span> (<span class="string">DIN</span>==<span class="number">1</span>)  <span class="string">ns</span>=<span class="string">S3</span>; <span class="comment">// 再投1元，总额3元，进入S3</span>
+                  <span class="keyword">else if</span> (<span class="string">DIN</span>==<span class="number">2</span>)  <span class="string">ns</span>=<span class="string">S4</span>; <span class="comment">// 再投2元，总额4元，进入S4</span>
+                  <span class="keyword">else if</span> (<span class="string">DIN</span>==<span class="number">4</span>)  <span class="string">ns</span>=<span class="string">S7</span>; <span class="comment">// 按退款键，进入S7退还2元</span>
+                  <span class="keyword">else</span> <span class="string">ns</span>=<span class="string">S5</span>; <span class="comment">// 按购买键，进入S5购买成功</span>
+                <span class="keyword">end</span>
+            <span class="string">S3</span> : <span class="keyword">begin</span> <span class="comment">// 状态S3: 已投入3元 (从2+1来)</span>		    
+                  <span class="string">N1</span>=<span class="number">2</span>; <span class="string">N4</span>=<span class="number">1</span>; <span class="comment">// 显示投入2元，找零1元</span>
+                  <span class="keyword">if</span> (<span class="string">DIN</span>==<span class="number">1</span>)  <span class="string">ns</span>=<span class="string">S3</span>; <span class="comment">// 保持当前状态</span>
+                  <span class="keyword">else if</span> (<span class="string">DIN</span>==<span class="number">2</span>)  <span class="string">ns</span>=<span class="string">S4</span>; <span class="comment">// 再投2元，总额5元，进入S4</span>
+                  <span class="keyword">else if</span> (<span class="string">DIN</span>==<span class="number">3</span>)  <span class="string">ns</span>=<span class="string">S5</span>; <span class="comment">// 按购买，进入S5购买并找零</span>
+                  <span class="keyword">else</span> <span class="string">ns</span>=<span class="string">S7</span>; <span class="comment">// 按退款，退还所有钱</span>
+            <span class="keyword">end</span>		
+            <span class="string">S4</span> : <span class="keyword">begin</span> <span class="comment">// 状态S4: 投入金额大于2元</span>		  
+                  <span class="string">N1</span>=<span class="number">2</span>; <span class="string">N4</span>=<span class="number">2</span>; <span class="comment">// 显示投入2元，找零2元（简化处理）</span>
+                  <span class="keyword">if</span> (<span class="string">DIN</span>==<span class="number">1</span>)  <span class="string">ns</span>=<span class="string">S3</span>; <span class="comment">// 这条路径逻辑上不完全正确，应进入更高金额状态</span>
+                  <span class="keyword">else if</span> (<span class="string">DIN</span>==<span class="number">2</span>)  <span class="string">ns</span>=<span class="string">S1</span>; <span class="comment">// 这条路径逻辑上不完全正确</span>
+                  <span class="keyword">else if</span> (<span class="string">DIN</span>==<span class="number">4</span>)  <span class="string">ns</span>=<span class="string">S7</span>; <span class="comment">// 按退款，退还所有钱</span>
+                  <span class="keyword">else</span> <span class="string">ns</span>=<span class="string">S5</span>; <span class="comment">// 按购买，购买并找零</span>
+                <span class="keyword">end</span>
+            <span class="string">S5</span> : <span class="keyword">begin</span> <span class="comment">// 状态S5: 购买/出货状态</span>		     
+                  <span class="string">N1</span>=<span class="number">0</span>; <span class="string">N4</span>=<span class="number">3</span>; <span class="comment">// 显示金额清零，状态3代表出货</span>
+                  <span class="keyword">if</span> (<span class="string">DIN</span>==<span class="number">1</span>)  <span class="string">ns</span>=<span class="string">S1</span>; <span class="comment">// 此时再投币，开始新的交易</span>
+                  <span class="keyword">else if</span> (<span class="string">DIN</span>==<span class="number">2</span>)  <span class="string">ns</span>=<span class="string">S2</span>;
+                  <span class="keyword">else</span> <span class="string">ns</span>=<span class="string">S0</span>;
+            <span class="keyword">end</span>	  
+            <span class="string">S6</span> : <span class="keyword">begin</span> <span class="comment">// 状态S6: 退款1元</span>		  
+                  <span class="string">N1</span>=<span class="number">0</span>; <span class="string">N4</span>=<span class="number">1</span>; <span class="comment">// 显示金额清零，状态1代表找零1元</span>
+                  <span class="keyword">if</span> (<span class="string">DIN</span>==<span class="number">1</span>)  <span class="string">ns</span>=<span class="string">S1</span>;
+                  <span class="keyword">else if</span> (<span class="string">DIN</span>==<span class="number">2</span>)  <span class="string">ns</span>=<span class="string">S2</span>;
+                  <span class="keyword">else</span> <span class="string">ns</span>=<span class="string">S0</span>;
+            <span class="keyword">end</span>	  
+            <span class="string">S7</span> : <span class="keyword">begin</span> <span class="comment">// 状态S7: 退款2元</span>		  
+                  <span class="string">N1</span>=<span class="number">0</span>; <span class="string">N4</span>=<span class="number">2</span>; <span class="comment">// 显示金额清零，状态2代表找零2元</span>
+                  <span class="keyword">if</span> (<span class="string">DIN</span>==<span class="number">1</span>)  <span class="string">ns</span>=<span class="string">S1</span>;
+                  <span class="keyword">else if</span> (<span class="string">DIN</span>==<span class="number">2</span>)  <span class="string">ns</span>=<span class="string">S2</span>;
+                  <span class="keyword">else</span> <span class="string">ns</span>=<span class="string">S0</span>;
+            <span class="keyword">end</span>	  
         <span class="keyword">endcase</span> 
     <span class="keyword">end</span> 
 <div class="summary-block"><b>总结：</b>这部分是自动售货机的核心状态机逻辑。它通过多个状态（S0-S7）来追踪当前投入的金额。每个状态下，都会根据用户的按键输入（`DIN`）来决定下一步的操作，例如累加金额、执行购买、执行退款，并跳转到相应的下一状态。同时，它会更新`N1`和`N4`的值，以控制数码管显示正确的金额和状态信息。</div>
-    <span class="comment">// --- 七段数码管驱动逻辑 ---</span>
-    <span class="keyword">always</span>@(<span class="keyword">posedge</span> <span class="string">clock</span>) <span class="keyword">begin</span> <span class="string">Q</span> <= <span class="string">Q</span> + <span class="number">1</span>; <span class="keyword">end</span>
-    <span class="keyword">assign</span> <span class="string">scan</span> = <span class="string">Q</span>[<span class="number">19</span>:<span class="number">18</span>];
 
-    <span class="keyword">always</span>@(*) <span class="keyword">begin</span> <span class="comment">// 位选，只选第一和第四个数码管</span>
-        <span class="keyword">case</span>(<span class="string">scan</span>)
-            <span class="number">0</span>: <span class="string">sel</span> = <span class="number">4'b1110</span>; <span class="comment">// 选中第一位</span>
-            <span class="number">3</span>: <span class="string">sel</span> = <span class="number">4'b0111</span>; <span class="comment">// 选中第四位</span>
-            <span class="keyword">default</span>: <span class="string">sel</span> = <span class="number">4'b1111</span>; <span class="comment">// 其他时间不选，防止重影</span>
-        <span class="keyword">endcase</span> 
+<span class="comment">//Seg7-------------------------------------------</span>
+    <span class="keyword">always</span>@(<span class="keyword">posedge</span> <span class="string">clock</span>)
+    <span class="keyword">begin</span>
+        <span class="string">Q</span><=<span class="string">Q</span>+<span class="number">1</span>;
     <span class="keyword">end</span>
 
-    <span class="keyword">always</span>@(*) <span class="keyword">begin</span>	<span class="comment">// 数据选择</span>
-        <span class="keyword">case</span>(<span class="string">scan</span>)
-            <span class="number">0</span>: <span class="string">N</span> = <span class="string">N1</span>; <span class="comment">// 第一位显示投入金额</span>
-            <span class="number">3</span>: <span class="string">N</span> = <span class="string">N4</span>; <span class="comment">// 第四位显示找零/出货状态</span>
-            <span class="keyword">default</span>: <span class="string">N</span> = <span class="number">0</span>;
+    <span class="keyword">assign</span> <span class="string">scan</span>=<span class="string">Q</span>[<span class="number">19</span>:<span class="number">18</span>];<span class="comment">//频率约为47hz，一周期变化四次</span>
+    <span class="keyword">always</span>@(*)
+    <span class="keyword">begin</span>
+     <span class="keyword">case</span>(<span class="string">scan</span>)<span class="comment">//利用scan扫描数码管选择线</span>
+        <span class="number">0</span>:<span class="string">sel</span>=<span class="number">4'b1110</span>; <span class="comment">// 选中第一位数码管</span>
+        <span class="number">3</span>:<span class="string">sel</span>=<span class="number">4'b0111</span>; <span class="comment">// 选中第四位数码管</span>
+      <span class="keyword">endcase</span> 
+    <span class="keyword">end</span>
+
+    <span class="keyword">always</span>@(*)
+    <span class="keyword">begin</span>	
+        <span class="keyword">case</span>(<span class="string">scan</span>)<span class="comment">//利用scan扫描两个不同的数字</span>
+        <span class="number">0</span>:<span class="string">N</span>=<span class="string">N1</span>; <span class="comment">// 当选中第一位时，显示N1（投入金额）</span>
+        <span class="number">3</span>:<span class="string">N</span>=<span class="string">N4</span>; <span class="comment">// 当选中第四位时，显示N4（状态/找零）</span>
         <span class="keyword">endcase</span>
     <span class="keyword">end</span>
 
-    <span class="keyword">always</span>@(*) <span class="keyword">begin</span> <span class="comment">// 段选译码</span>
-        <span class="keyword">case</span>(<span class="string">N</span>)
-            <span class="number">0</span> : <span class="string">Seg7</span> = <span class="number">8'b11000000</span>;
-            <span class="number">1</span> : <span class="string">Seg7</span> = <span class="number">8'b11111001</span>;		
-            <span class="number">2</span> : <span class="string">Seg7</span> = <span class="number">8'b10100100</span>;
-            <span class="number">3</span> : <span class="string">Seg7</span> = <span class="number">8'b10001110</span>; <span class="comment">// 用 'E' (Error/Eject) 表示出货或找零</span>
-            <span class="keyword">default</span>: <span class="string">Seg7</span> = <span class="number">8'b11111111</span>;
+    <span class="keyword">always</span>@(*)
+    <span class="keyword">begin</span> 
+        <span class="keyword">case</span>(<span class="string">N</span>) <span class="comment">// 将数字N译码为七段数码管的段码</span>
+         <span class="number">0</span> : <span class="string">Seg7</span> = <span class="number">8'b11000000</span>; <span class="comment">// 数字0的段码</span>
+         <span class="number">1</span> : <span class="string">Seg7</span> = <span class="number">8'b11111001</span>; <span class="comment">// 数字1的段码</span>		
+         <span class="number">2</span> : <span class="string">Seg7</span> = <span class="number">8'b10100100</span>; <span class="comment">// 数字2的段码</span>
+         <span class="number">3</span> : <span class="string">Seg7</span> = <span class="number">8'b10001110</span>; <span class="comment">// 字母E的段码 (用于表示Error/Eject)</span>
+         <span class="keyword">default</span>  : <span class="string">Seg7</span> = <span class="number">8'b11111111</span>; <span class="comment">// 默认全灭</span>
         <span class="keyword">endcase</span>
     <span class="keyword">end</span> 
 <span class="keyword">endmodule</span>
 <div class="summary-block"><b>总结：</b>这部分是数码管的显示驱动电路。它通过动态扫描的方式，分时点亮第一位和第四位数码管。第一位用于显示投入的金额（由`N1`控制），第四位用于显示找零或出货的状态（由`N4`控制）。通过快速切换，实现了同时显示两个不同信息的效果。</div></code></pre>
-
+        
         <h2>面试问答回顾</h2>
         <div class="qa-block">
             <p class="question">老师：讲解一下你的自动售货机的状态机是如何工作的。</p>
@@ -189,7 +250,7 @@
             </li>
             <li>
                 <p class="question">问：这个设计是Moore型状态机还是Mealy型状态机？为什么？</p>
-                <p class="answer">答：这是一个典型的Moore型状态机。因为所有的输出（`N1`, `N4`等）都只在`case(ps)`块内根据当前状态`ps`来确定，与当前的输入`DIN`没有直接的组合逻辑关系。输入`DIN`只用来决定下一个状态`ns`。如果输出（例如找零金额）直接依赖于`DIN`，比如`if (DIN==4) output_change = N1`，那它就更接近Mealy型。</p>
+                <p class="answer">答：这是一个典型的**Moore型状态机**。因为所有的输出（`N1`, `N4`等）都只在`case(ps)`块内根据当前状态`ps`来确定，与当前的输入`DIN`没有直接的组合逻辑关系。输入`DIN`只用来决定下一个状态`ns`。如果输出（例如找零金额）直接依赖于`DIN`，比如`if (DIN==4) output_change = N1`，那它就更接近Mealy型。</p>
             </li>
         </ul>
         
@@ -205,7 +266,7 @@
             </li>
             <li>
                 <p class="question">如何用Verilog实现一个分频器，比如将50MHz时钟分频为1Hz？</p>
-                <p class="answer">答：可以通过一个计数器实现。要从50MHz得到1Hz，分频系数是50,000,000。对于一个占空比50%的方波，其周期为1秒，半周期为0.5秒。需要计数的时钟周期数是 50,000,000 * 0.5 = 25,000,000。所以，可以设计一个计数器，在每个时钟上升沿加1，当计到25,000,000时，将输出信号翻转，并把计数器清零。就像代码中`pulse`的实现方式一样（但5_1代码中的计数值有误，应为25,000,000）。</p>
+                <p class="answer">答：可以通过一个计数器实现。要从50MHz得到1Hz，分频系数是50,000,000。对于一个占空比50%的方波，其周期为1秒，半周期为0.5秒。需要计数的时钟周期数是 50,000,000 * 0.5 = 25,000,000。所以，可以设计一个计数器，在每个时钟上升沿加1，当计到25,000,000 - 1时，将输出信号翻转，并把计数器清零，从而产生1Hz的方波。</p>
             </li>
         </ul>
     </div>
